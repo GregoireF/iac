@@ -24,6 +24,7 @@ terraform {
   #
   # Alternative: Spacelift (natively supports OpenTofu, no HashiCorp dependency).
   cloud {
+    hostname     = "app.terraform.io"
     organization = "gregoiref"
 
     workspaces {
