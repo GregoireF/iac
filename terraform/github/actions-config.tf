@@ -10,7 +10,7 @@ resource "github_actions_variable" "github_owner" {
   for_each = local.actions_var_repos
 
   repository    = module.repository[each.key].name
-  variable_name = "GITHUB_OWNER"
+  variable_name = "GH_OWNER"
   value         = var.github_owner
 
   depends_on = [module.repository]
