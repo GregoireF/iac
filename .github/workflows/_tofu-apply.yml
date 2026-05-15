@@ -20,9 +20,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    defaults:
-      run:
-        working-directory: ${{ inputs.stack }}
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -32,7 +29,7 @@ jobs:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: Init
-        run: tofu init
+        run: tofu -chdir=${{ inputs.stack }} init
 
       - name: Apply
-        run: tofu apply -auto-approve -no-color
+        run: tofu -chdir=${{ inputs.stack }} apply -auto-approve -no-color

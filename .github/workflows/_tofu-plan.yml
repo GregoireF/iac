@@ -27,9 +27,6 @@ jobs:
       pull-requests: write
     outputs:
       outcome: ${{ steps.plan.outcome }}
-    defaults:
-      run:
-        working-directory: ${{ inputs.stack }}
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -39,17 +36,17 @@ jobs:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: Format check
-        run: tofu fmt -check -recursive
+        run: tofu -chdir=${{ inputs.stack }} fmt -check -recursive
 
       - name: Init
-        run: tofu init
+        run: tofu -chdir=${{ inputs.stack }} init
 
       - name: Validate
-        run: tofu validate
+        run: tofu -chdir=${{ inputs.stack }} validate
 
       - name: Plan
         id: plan
-        run: tofu plan -no-color 2>&1 | tee /tmp/plan.txt
+        run: tofu -chdir=${{ inputs.stack }} plan -no-color 2>&1 | tee /tmp/plan.txt
         continue-on-error: true
 
       - name: Post plan comment
