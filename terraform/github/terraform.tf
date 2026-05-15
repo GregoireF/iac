@@ -24,7 +24,7 @@ terraform {
   #
   # Alternative: Spacelift (natively supports OpenTofu, no HashiCorp dependency).
   cloud {
-    organization = "YOUR_TFC_ORG" # TODO: replace
+    organization = "gregoiref"
 
     workspaces {
       name = "github"

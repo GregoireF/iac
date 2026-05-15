@@ -11,7 +11,7 @@ terraform {
   # Separate HCP Terraform workspace from the github stack.
   # Store DOPPLER_TOKEN as a sensitive workspace variable in HCP Terraform.
   cloud {
-    organization = "YOUR_TFC_ORG" # TODO: same org as terraform/github
+    organization = "gregoiref"
 
     workspaces {
       name = "doppler"
