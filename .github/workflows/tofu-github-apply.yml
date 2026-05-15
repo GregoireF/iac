@@ -13,7 +13,8 @@ on:
         required: false
         default: "terraform/github"
 
-permissions: {}
+permissions:
+  contents: read
 
 # Never cancel an apply in progress
 concurrency:
