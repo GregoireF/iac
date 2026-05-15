@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "terraform/doppler/**"
+  workflow_dispatch:
 
 permissions: {}
 
@@ -17,5 +18,4 @@ jobs:
     uses: ./.github/workflows/_tofu-apply.yml
     with:
       stack: terraform/doppler
-    secrets:
-      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+    secrets: inherit

@@ -6,6 +6,12 @@ on:
     paths:
       - "terraform/github/**"
       - "modules/github/**"
+  workflow_dispatch:
+    inputs:
+      stack:
+        description: "Stack to apply (default: terraform/github)"
+        required: false
+        default: "terraform/github"
 
 permissions: {}
 
@@ -19,5 +25,4 @@ jobs:
     uses: ./.github/workflows/_tofu-apply.yml
     with:
       stack: terraform/github
-    secrets:
-      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+    secrets: inherit
