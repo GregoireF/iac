@@ -38,6 +38,9 @@ variable "config" {
       enabled                      = bool
       required_status_checks       = list(string)
       enforce_conventional_commits = optional(bool, false)
+      # Require changes to go through a PR (0 reviews required — solo-developer friendly).
+      # github-actions[bot] retains a bypass so auto-commits (e.g. terraform-docs) still work.
+      require_pr_reviews = optional(bool, false)
     })
 
     # GitHub Environments for deployment gates.
