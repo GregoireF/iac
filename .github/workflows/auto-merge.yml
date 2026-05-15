@@ -35,7 +35,10 @@ jobs:
 
       - name: Label major updates for manual review
         if: steps.meta.outputs.update-type == 'version-update:semver-major'
-        run: gh pr edit "$PR_URL" --add-label "priority:high"
+        run: |
+          gh label create "priority:high" --color "991b1b" \
+            --description "High priority — address immediately" 2>/dev/null || true
+          gh pr edit "$PR_URL" --add-label "priority:high"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
