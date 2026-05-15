@@ -1,0 +1,89 @@
+repos:
+  # Conventional commit message validation
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.4.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args:
+          - feat
+          - fix
+          - docs
+          - style
+          - refactor
+          - perf
+          - test
+          - build
+          - ci
+          - chore
+          - revert
+          - wip
+
+  # General hygiene
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: "^modules/.*/templates/"
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-json
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+  # OpenTofu — format and validate
+  # Requires `tofu` in PATH (installed by tenv via .opentofu-version)
+  - repo: local
+    hooks:
+      - id: tofu-fmt
+        name: OpenTofu format
+        description: Enforce canonical HCL format on all .tf files
+        entry: tofu fmt -check -recursive
+        language: system
+        types_or: [terraform, hcl]
+        pass_filenames: false
+
+      - id: tofu-validate
+        name: OpenTofu validate
+        description: Validate HCL syntax in every stack
+        entry: bash -c '
+          for stack in terraform/*/; do
+            echo "→ validating $stack";
+            (cd "$stack" && tofu init -backend=false -no-color -input=false > /dev/null && tofu validate -no-color) || exit 1;
+          done'
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+
+      - id: trivy-iac
+        name: Trivy IaC scan
+        description: Fail on CRITICAL misconfigurations before push
+        entry: trivy config --exit-code 1 --severity CRITICAL --quiet .
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+
+      - id: checkov
+        name: Checkov policy scan
+        description: Fail on HIGH+ policy violations (Terraform framework)
+        entry: checkov --directory . --framework terraform --check HIGH,CRITICAL --quiet
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+
+      - id: tofu-test
+        name: OpenTofu unit tests
+        description: Run tofu test for all modules with tests/ directories
+        entry: bash -c '
+          for mod in modules/*/*; do
+            if [ -d "$mod/tests" ]; then
+              echo "→ testing $mod";
+              (cd "$mod" && tofu init -backend=false -no-color -input=false > /dev/null && tofu test -no-color) || exit 1;
+            fi;
+          done'
+        language: system
+        pass_filenames: false
+        stages: [pre-push]

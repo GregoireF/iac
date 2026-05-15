@@ -1,0 +1,21 @@
+name: opentofu · doppler · plan
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "terraform/doppler/**"
+      - ".github/workflows/_tofu-*.yml"
+      - ".github/workflows/tofu-doppler-*.yml"
+
+concurrency:
+  group: tofu-doppler-plan-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  plan:
+    uses: ./.github/workflows/_tofu-plan.yml
+    with:
+      stack: terraform/doppler
+    secrets:
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}

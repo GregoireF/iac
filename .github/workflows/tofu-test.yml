@@ -1,0 +1,38 @@
+name: opentofu · test
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "modules/**"
+      - "terraform/**"
+      - ".github/workflows/tofu-test.yml"
+  push:
+    branches: [main]
+    paths:
+      - "modules/**"
+  workflow_dispatch:
+
+concurrency:
+  group: tofu-test-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    name: Unit tests (tofu test)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: opentofu/setup-opentofu@v1
+
+      - name: Test · modules/github/repository
+        working-directory: modules/github/repository
+        # mock_provider requires no backend — init with -backend=false
+        run: |
+          tofu init -backend=false -no-color -input=false
+          tofu test -no-color

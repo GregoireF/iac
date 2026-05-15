@@ -1,0 +1,27 @@
+# Normalise line endings to LF on commit for all text files.
+* text=auto eol=lf
+
+# Terraform
+*.tf      text eol=lf
+*.tfvars  text eol=lf
+*.hcl     text eol=lf
+
+# Go
+*.go      text eol=lf
+go.sum    text eol=lf merge=ours
+
+# Scripts / config
+*.sh      text eol=lf
+*.py      text eol=lf
+*.yml     text eol=lf
+*.yaml    text eol=lf
+*.json    text eol=lf
+*.md      text eol=lf
+
+# Binaries — no processing
+*.png     binary
+*.jpg     binary
+*.gif     binary
+*.ico     binary
+*.zip     binary
+*.tar.gz  binary

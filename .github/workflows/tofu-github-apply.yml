@@ -1,0 +1,21 @@
+name: opentofu · github · apply
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "terraform/github/**"
+      - "modules/github/**"
+
+# Never cancel an apply in progress
+concurrency:
+  group: tofu-github-apply
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    uses: ./.github/workflows/_tofu-apply.yml
+    with:
+      stack: terraform/github
+    secrets:
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}

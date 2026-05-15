@@ -1,0 +1,14 @@
+# mise — polyglot tool version manager (https://mise.jdx.dev)
+# Manages Go and Python versions consistently across local, CI, and devcontainer.
+# OpenTofu is managed separately by tenv via .opentofu-version.
+#
+# Install mise: https://mise.jdx.dev/getting-started.html
+# Then run: mise install
+
+[tools]
+go     = "1.23"
+python = "3.12"
+
+[env]
+# Ensure go binaries are on PATH
+GOPATH = "{{env.HOME}}/go"

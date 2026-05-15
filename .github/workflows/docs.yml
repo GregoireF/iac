@@ -1,0 +1,38 @@
+name: docs
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "modules/**"
+  push:
+    branches: [main]
+    paths:
+      - "modules/**"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  terraform-docs:
+    name: terraform-docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate / check terraform-docs
+        uses: terraform-docs/gh-actions@v1
+        with:
+          recursive: true
+          recursive-path: modules/
+          config-file: .terraform-docs.yml
+          output-method: inject
+          git-push: "${{ github.event_name == 'push' }}"
+          git-push-user-name: "github-actions[bot]"
+          git-push-user-email: "41898282+github-actions[bot]@users.noreply.github.com"
+          git-commit-message: "docs: regenerate terraform-docs [skip ci]"
+          fail-on-diff: "${{ github.event_name == 'pull_request' }}"
