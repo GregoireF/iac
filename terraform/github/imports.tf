@@ -1,3 +1,18 @@
 # Import blocks for pre-existing repositories.
-# These have been successfully imported into Terraform state — blocks removed.
-# If you need to re-import a repo, add a block temporarily and remove after apply.
+# Run once: terraform plan will show the import, terraform apply will absorb the resource.
+# After a successful apply, these blocks can be removed (the resource is now tracked in state).
+
+import {
+  id = "iac"
+  to = module.repository["iac"].github_repository.this
+}
+
+import {
+  id = "utils"
+  to = module.repository["utils"].github_repository.this
+}
+
+import {
+  id = "GregoireF"
+  to = module.repository["GregoireF"].github_repository.this
+}
