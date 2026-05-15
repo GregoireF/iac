@@ -8,6 +8,8 @@ on:
       - ".github/workflows/_tofu-*.yml"
       - ".github/workflows/tofu-doppler-*.yml"
 
+permissions: {}
+
 concurrency:
   group: tofu-doppler-plan-${{ github.ref }}
   cancel-in-progress: true

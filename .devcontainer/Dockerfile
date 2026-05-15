@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
+FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04@sha256:d94c97dd9cacf183d0a6fd12a8e87b526e9e928307674ae9c94139139c0c6eae
 
 # tenv — version manager for OpenTofu & Terraform
 # Lets you switch versions via .opentofu-version file per project
@@ -20,9 +20,15 @@ RUN ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') \
     && chmod +x /usr/local/bin/terraform-docs \
     && rm /tmp/tfdocs.tar.gz
 
-# tflint — Terraform/OpenTofu linter
-RUN curl -fsSL https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh \
-    | bash
+# tflint — Terraform/OpenTofu linter (versioned binary, not curl|bash)
+ARG TFLINT_VERSION=0.62.1
+RUN ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') \
+    && curl -fsSL \
+       "https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}/tflint_linux_${ARCH}.zip" \
+       -o /tmp/tflint.zip \
+    && unzip -q /tmp/tflint.zip -d /usr/local/bin/ \
+    && chmod +x /usr/local/bin/tflint \
+    && rm /tmp/tflint.zip
 
 # trivy — IaC security scanner (used by pre-commit + security-scan workflow)
 ARG TRIVY_VERSION=0.57.0
@@ -34,10 +40,14 @@ RUN ARCH=$(uname -m | sed 's/x86_64/64bit/;s/aarch64/ARM64/') \
     && chmod +x /usr/local/bin/trivy \
     && rm /tmp/trivy.tar.gz
 
-# Checkov — policy-as-code scanner (used by pre-commit + security-scan workflow)
-# Go — needed for Terratest integration tests
-RUN pip3 install --no-cache-dir pre-commit checkov
+# pre-commit + Checkov — pinned to avoid supply-chain drift
+ARG PRECOMMIT_VERSION=4.6.0
+ARG CHECKOV_VERSION=3.2.529
+RUN pip3 install --no-cache-dir \
+    "pre-commit==${PRECOMMIT_VERSION}" \
+    "checkov==${CHECKOV_VERSION}"
 
+# Go — needed for Terratest integration tests
 ARG GO_VERSION=1.23.4
 RUN ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') \
     && curl -fsSL \

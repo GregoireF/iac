@@ -9,7 +9,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  issues: write
+  contents: read
   models: read
 
 jobs:
@@ -17,9 +17,12 @@ jobs:
     name: Triage
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      issues: write
+      models: read
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Triage issue
         env:

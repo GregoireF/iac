@@ -1,0 +1,5 @@
+# Checkov configuration — policy suppressions for intentional design decisions
+skip-check:
+  # CKV_GIT_1: "Ensure GitHub repository is Private"
+  # All repos in this IaC are intentionally public (open-source personal projects).
+  - CKV_GIT_1
