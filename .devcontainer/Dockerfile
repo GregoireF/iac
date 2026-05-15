@@ -40,12 +40,8 @@ RUN ARCH=$(uname -m | sed 's/x86_64/64bit/;s/aarch64/ARM64/') \
     && chmod +x /usr/local/bin/trivy \
     && rm /tmp/trivy.tar.gz
 
-# pre-commit + Checkov — pinned to avoid supply-chain drift
-ARG PRECOMMIT_VERSION=4.6.0
-ARG CHECKOV_VERSION=3.2.529
-RUN pip3 install --no-cache-dir \
-    "pre-commit==${PRECOMMIT_VERSION}" \
-    "checkov==${CHECKOV_VERSION}"
+# pre-commit + Checkov — literal versions (not ARG vars) for OSSF Scorecard compliance
+RUN pip3 install --no-cache-dir "pre-commit==4.6.0" "checkov==3.2.529"
 
 # Go — needed for Terratest integration tests
 ARG GO_VERSION=1.23.4
@@ -57,3 +53,8 @@ RUN ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') \
     && rm /tmp/go.tar.gz
 
 ENV PATH="/usr/local/go/bin:${PATH}"
+
+# Dev containers do not require a HEALTHCHECK; explicit NONE avoids Trivy DS-0026
+HEALTHCHECK NONE
+# Drop to non-root user — the base image provides a 'vscode' user (Trivy DS-0002)
+USER vscode
