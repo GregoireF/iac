@@ -1,0 +1,36 @@
+name: _tofu · apply (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      stack:
+        description: "Relative path to the OpenTofu stack (e.g. terraform/github)"
+        type: string
+        required: true
+    secrets:
+      TF_API_TOKEN:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  apply:
+    name: Apply · ${{ inputs.stack }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.stack }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Init
+        run: tofu init
+
+      - name: Apply
+        run: tofu apply -auto-approve -no-color

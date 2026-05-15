@@ -1,0 +1,49 @@
+name: test · integration (Terratest)
+
+# Integration tests create real GitHub resources — run on schedule + manual only.
+# Never on every PR (too slow, too many API calls).
+
+on:
+  schedule:
+    # Every Sunday at 02:00 UTC
+    - cron: "0 2 * * 0"
+  workflow_dispatch:
+    inputs:
+      test_filter:
+        description: "Go test -run filter (default: all)"
+        required: false
+        default: "TestGitHub"
+
+concurrency:
+  group: integration-test
+  cancel-in-progress: false # never cancel — partial teardown = orphaned resources
+
+permissions:
+  contents: read
+
+jobs:
+  terratest:
+    name: Terratest
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: tests/go.mod
+          cache: true
+          cache-dependency-path: tests/go.sum
+
+      - uses: opentofu/setup-opentofu@v1
+
+      - name: Run integration tests
+        working-directory: tests
+        run: |
+          go test -v \
+            -run "${{ inputs.test_filter || 'TestGitHub' }}" \
+            -timeout 15m \
+            ./...
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_APP_TOKEN }}
+          GITHUB_OWNER: ${{ vars.GITHUB_OWNER }}

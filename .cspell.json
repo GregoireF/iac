@@ -1,0 +1,39 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "OSSF",
+    "misconfig",
+    "Terratest",
+    "stdlib",
+    "tftest",
+    "tofuutils",
+    "tenv",
+    "tflint",
+    "justfile",
+    "pyenv",
+    "OpenTofu",
+    "opentofu",
+    "tofu",
+    "doppler",
+    "checkov",
+    "trivy",
+    "tfsec",
+    "mise",
+    "asdf",
+    "hcl",
+    "tfvars",
+    "ruleset",
+    "rulesets",
+    "automerge",
+    "pre-commit",
+    "semver",
+    "prereq"
+  ],
+  "ignorePaths": [
+    ".terraform",
+    "*.lock.hcl",
+    "go.sum",
+    "tests/go.mod"
+  ]
+}

@@ -1,0 +1,47 @@
+version: 2
+
+updates:
+  # GitHub Actions — bump action versions weekly
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: "Europe/Paris"
+    labels:
+      - dependencies
+      - github-actions
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "chore(deps)"
+
+  # OpenTofu providers — github stack
+  - package-ecosystem: terraform
+    directory: /terraform/github
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: "Europe/Paris"
+    labels:
+      - dependencies
+      - terraform
+    commit-message:
+      prefix: "chore(deps)"
+
+  # OpenTofu providers — doppler stack
+  - package-ecosystem: terraform
+    directory: /terraform/doppler
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: "Europe/Paris"
+    labels:
+      - dependencies
+      - terraform
+    commit-message:
+      prefix: "chore(deps)"

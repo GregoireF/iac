@@ -1,0 +1,22 @@
+name: opentofu · github · plan
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "terraform/github/**"
+      - "modules/github/**"
+      - ".github/workflows/_tofu-*.yml"
+      - ".github/workflows/tofu-github-*.yml"
+
+concurrency:
+  group: tofu-github-plan-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  plan:
+    uses: ./.github/workflows/_tofu-plan.yml
+    with:
+      stack: terraform/github
+    secrets:
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}

@@ -1,0 +1,93 @@
+name: security · scan
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "terraform/**"
+      - "modules/**"
+      - ".github/workflows/security-scan.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "terraform/**"
+      - "modules/**"
+  schedule:
+    # Every Monday at 08:00 UTC — catch new CVEs on existing config
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: security-scan-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  security-events: write  # upload SARIF to GitHub Security tab
+  pull-requests: write    # annotate PRs with findings
+
+jobs:
+  trivy:
+    name: Trivy IaC scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan — SARIF (Security tab)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: config
+          scan-ref: .
+          format: sarif
+          output: trivy.sarif
+          severity: HIGH,CRITICAL
+          exit-code: "0" # don't fail here — upload first, then gate below
+
+      - name: Upload SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy.sarif
+          category: trivy-iac
+
+      - name: Scan — fail on CRITICAL
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: config
+          scan-ref: .
+          severity: CRITICAL
+          exit-code: "1"
+          format: table
+
+  checkov:
+    name: Checkov policy scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan — SARIF (Security tab)
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: .
+          framework: terraform
+          output_format: sarif
+          output_file_path: checkov.sarif
+          soft_fail: true        # upload first, gate in next step
+          quiet: true
+
+      - name: Upload SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: checkov.sarif
+          category: checkov
+
+      - name: Scan — fail on HIGH+
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: .
+          framework: terraform
+          check: "HIGH,CRITICAL"
+          quiet: true

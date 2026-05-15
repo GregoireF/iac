@@ -1,0 +1,19 @@
+name: opentofu · doppler · apply
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "terraform/doppler/**"
+
+concurrency:
+  group: tofu-doppler-apply
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    uses: ./.github/workflows/_tofu-apply.yml
+    with:
+      stack: terraform/doppler
+    secrets:
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
