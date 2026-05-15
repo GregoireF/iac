@@ -273,3 +273,52 @@ run "conventional_commits_off_by_default" {
     error_message = "ruleset exists (branch_protection.enabled = true in default vars)"
   }
 }
+
+# ---------------------------------------------------------------------------
+# PR review requirement
+# ---------------------------------------------------------------------------
+
+run "require_pr_reviews_adds_pull_request_rule" {
+  command = plan
+
+  variables {
+    config = {
+      description            = "PR reviews repo"
+      topics                 = []
+      visibility             = "public"
+      has_issues             = true
+      has_wiki               = false
+      has_projects           = false
+      allow_merge_commit     = false
+      allow_squash_merge     = true
+      allow_rebase_merge     = false
+      delete_branch_on_merge = true
+      archived               = false
+      inject_standard_files  = false
+      allow_auto_merge       = false
+
+      branch_protection = {
+        enabled            = true
+        required_status_checks = []
+        require_pr_reviews = true
+      }
+
+      environments = {}
+      deploy_keys  = {}
+    }
+  }
+
+  assert {
+    condition     = length(github_repository_ruleset.default_branch) == 1
+    error_message = "ruleset must be created when require_pr_reviews = true"
+  }
+}
+
+run "require_pr_reviews_off_by_default" {
+  command = plan
+
+  assert {
+    condition     = length(github_repository_ruleset.default_branch) == 1
+    error_message = "ruleset exists (branch_protection.enabled = true in default vars)"
+  }
+}

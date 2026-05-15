@@ -1,3 +1,5 @@
+# Public visibility is intentional — all repos are personal open-source projects.
+#trivy:ignore:GIT-0001
 resource "github_repository" "this" {
   name        = var.name
   description = var.config.description
@@ -61,6 +63,17 @@ resource "github_repository_ruleset" "default_branch" {
       }
     }
 
+    dynamic "pull_request" {
+      for_each = var.config.branch_protection.require_pr_reviews ? [1] : []
+      content {
+        required_approving_review_count   = 0
+        dismiss_stale_reviews_on_push     = false
+        require_code_owner_review         = false
+        require_last_push_approval        = false
+        required_review_thread_resolution = false
+      }
+    }
+
     dynamic "commit_message_pattern" {
       for_each = var.config.branch_protection.enforce_conventional_commits ? [1] : []
       content {
@@ -75,6 +88,12 @@ resource "github_repository_ruleset" "default_branch" {
   bypass_actors {
     actor_id    = 5 # Admin repository role
     actor_type  = "RepositoryRole"
+    bypass_mode = "always"
+  }
+
+  bypass_actors {
+    actor_id    = 41898282 # github-actions[bot] — allows auto-commits (e.g. terraform-docs)
+    actor_type  = "Integration"
     bypass_mode = "always"
   }
 }
