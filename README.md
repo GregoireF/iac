@@ -3,6 +3,13 @@
 > Agency-level Infrastructure as Code — GitHub automation, secrets management,
 > and AI-powered workflows, fully managed with OpenTofu.
 
+[![OpenTofu Plan](https://github.com/GregoireF/iac/actions/workflows/tofu-github-plan.yml/badge.svg)](https://github.com/GregoireF/iac/actions/workflows/tofu-github-plan.yml)
+[![Security Scan](https://github.com/GregoireF/iac/actions/workflows/security-scan.yml/badge.svg)](https://github.com/GregoireF/iac/actions/workflows/security-scan.yml)
+[![Unit Tests](https://github.com/GregoireF/iac/actions/workflows/tofu-test.yml/badge.svg)](https://github.com/GregoireF/iac/actions/workflows/tofu-test.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/GregoireF/iac/badge)](https://securityscorecards.dev/viewer/?uri=github.com/GregoireF/iac)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![OpenTofu](https://img.shields.io/badge/OpenTofu-%3E%3D1.9-7b2d8b)](https://opentofu.org)
+
 ---
 
 ## Stack
@@ -331,9 +338,18 @@ Scripts are in `.github/scripts/` and use Python stdlib only — no `pip install
 
 ---
 
+## Security
+
+Security vulnerabilities should be reported according to the [security policy](.github/SECURITY.md).
+
+Supply-chain security is continuously monitored via [OSSF Scorecard](https://securityscorecards.dev/viewer/?uri=github.com/GregoireF/iac).
+Results are published to the [GitHub Security tab](https://github.com/GregoireF/iac/security/code-scanning) after every push to `main`.
+
+---
+
 ## License
 
-MIT
+[MIT](LICENSE) — Copyright © 2026 GregoireF
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
