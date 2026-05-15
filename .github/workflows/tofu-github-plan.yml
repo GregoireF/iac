@@ -9,6 +9,8 @@ on:
       - ".github/workflows/_tofu-*.yml"
       - ".github/workflows/tofu-github-*.yml"
 
+permissions: {}
+
 concurrency:
   group: tofu-github-plan-${{ github.ref }}
   cancel-in-progress: true

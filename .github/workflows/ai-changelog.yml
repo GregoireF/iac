@@ -5,7 +5,7 @@ on:
     types: [created]
 
 permissions:
-  contents: write
+  contents: read
   models: read
 
 jobs:
@@ -13,9 +13,12 @@ jobs:
     name: Generate changelog
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: write
+      models: read
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
 

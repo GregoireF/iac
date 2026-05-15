@@ -23,19 +23,21 @@ concurrency:
 
 permissions:
   contents: read
-  security-events: write  # upload SARIF to GitHub Security tab
-  pull-requests: write    # annotate PRs with findings
 
 jobs:
   trivy:
     name: Trivy IaC scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Scan — SARIF (Security tab)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
         with:
           scan-type: config
           scan-ref: .
@@ -45,14 +47,14 @@ jobs:
           exit-code: "0" # don't fail here — upload first, then gate below
 
       - name: Upload SARIF to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@458d36d7d4f47d0dd16ca424c1d3cda0060f1360 # v3
         if: always()
         with:
           sarif_file: trivy.sarif
           category: trivy-iac
 
       - name: Scan — fail on CRITICAL
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
         with:
           scan-type: config
           scan-ref: .
@@ -63,12 +65,16 @@ jobs:
   checkov:
     name: Checkov policy scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Scan — SARIF (Security tab)
-        uses: bridgecrewio/checkov-action@v12
+        uses: bridgecrewio/checkov-action@4048c972aae68d0b983a48bb3479aab2d877b898 # v12
         with:
           directory: .
           framework: terraform
@@ -78,14 +84,14 @@ jobs:
           quiet: true
 
       - name: Upload SARIF to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@458d36d7d4f47d0dd16ca424c1d3cda0060f1360 # v3
         if: always()
         with:
           sarif_file: checkov.sarif
           category: checkov
 
       - name: Scan — fail on HIGH+
-        uses: bridgecrewio/checkov-action@v12
+        uses: bridgecrewio/checkov-action@4048c972aae68d0b983a48bb3479aab2d877b898 # v12
         with:
           directory: .
           framework: terraform

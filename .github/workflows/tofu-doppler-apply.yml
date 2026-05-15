@@ -6,6 +6,8 @@ on:
     paths:
       - "terraform/doppler/**"
 
+permissions: {}
+
 concurrency:
   group: tofu-doppler-apply
   cancel-in-progress: false
