@@ -16,6 +16,8 @@ concurrency:
 
 jobs:
   plan:
+    # Dependabot PRs cannot access TF_API_TOKEN — skip plan for non-IaC changes
+    if: github.actor != 'dependabot[bot]'
     uses: ./.github/workflows/_tofu-plan.yml
     with:
       stack: terraform/doppler
