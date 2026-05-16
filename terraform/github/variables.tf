@@ -3,21 +3,9 @@ variable "github_owner" {
   description = "GitHub username or organization name."
 }
 
-variable "github_app_id" {
+variable "github_token" {
   type        = string
-  description = "GitHub App ID. Store as a sensitive workspace variable in HCP Terraform."
-  sensitive   = true
-}
-
-variable "github_app_installation_id" {
-  type        = string
-  description = "GitHub App installation ID. Store as a sensitive workspace variable in HCP Terraform."
-  sensitive   = true
-}
-
-variable "github_app_pem_file" {
-  type        = string
-  description = "GitHub App private key (full PEM content). Store as a sensitive workspace variable in HCP Terraform."
+  description = "GitHub classic PAT (repo scope). Store as a sensitive workspace variable in HCP Terraform."
   sensitive   = true
 }
 
