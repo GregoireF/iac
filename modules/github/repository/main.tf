@@ -91,11 +91,6 @@ resource "github_repository_ruleset" "default_branch" {
     bypass_mode = "always"
   }
 
-  bypass_actors {
-    actor_id    = 41898282 # github-actions[bot] — allows auto-commits (e.g. terraform-docs)
-    actor_type  = "Integration"
-    bypass_mode = "always"
-  }
 }
 
 # Deployment environments with optional wait timers and branch policies.
