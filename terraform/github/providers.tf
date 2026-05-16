@@ -1,4 +1,4 @@
 provider "github" {
   owner = var.github_owner
-  token = var.github_token
+  # Token is read from GITHUB_TOKEN environment variable set in HCP Terraform workspace.
 }
