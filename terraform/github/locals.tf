@@ -22,8 +22,8 @@ locals {
         enabled = true
         # Set to ["Plan"] after the first successful opentofu · github · plan run.
         required_status_checks       = []
-        enforce_conventional_commits = true
-        require_pr_reviews           = true
+        enforce_conventional_commits = false
+        require_pr_reviews           = false
       }
 
       # This repo manages its own .github/ files directly — skip Terraform injection.
