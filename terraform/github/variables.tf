@@ -3,11 +3,6 @@ variable "github_owner" {
   description = "GitHub username or organization name."
 }
 
-variable "github_token" {
-  type        = string
-  description = "GitHub classic PAT (repo scope). Store as a sensitive workspace variable in HCP Terraform."
-  sensitive   = true
-}
 
 # ---------------------------------------------------------------------------
 # Optional: SSH & GPG keys for the account.
