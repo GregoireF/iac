@@ -8,7 +8,9 @@ on:
       - ".github/workflows/_tofu-*.yml"
       - ".github/workflows/tofu-doppler-*.yml"
 
-permissions: {}
+permissions:
+  contents: read
+  pull-requests: write
 
 concurrency:
   group: tofu-doppler-plan-${{ github.ref }}
