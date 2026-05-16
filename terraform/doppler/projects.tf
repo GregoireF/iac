@@ -11,7 +11,7 @@ resource "doppler_environment" "ci" {
 
   project    = each.key
   slug       = "ci"
-  name       = "CI/CD"
+  name       = "CI"
   depends_on = [doppler_project.this]
 }
 
