@@ -3,7 +3,8 @@ terraform {
 
   required_providers {
     doppler = {
-      source  = "dopp-eng/doppler"
+      # OpenTofu registry does not carry dopp-eng/doppler — use Terraform registry explicitly.
+      source  = "registry.terraform.io/dopp-eng/doppler"
       version = "~> 0.10"
     }
   }
