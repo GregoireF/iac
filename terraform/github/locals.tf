@@ -20,10 +20,12 @@ locals {
 
       branch_protection = {
         enabled = true
-        # Set to ["Plan"] after the first successful opentofu · github · plan run.
+        # Exact check names confirmed after first PR run — add them here then.
         required_status_checks       = []
+        # commit_message_pattern ruleset rule is unsupported on personal repos.
+        # Conventional commits are enforced via the commitlint CI workflow instead.
         enforce_conventional_commits = false
-        require_pr_reviews           = false
+        require_pr_reviews           = true
       }
 
       # This repo manages its own .github/ files directly — skip Terraform injection.

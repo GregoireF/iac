@@ -9,7 +9,9 @@ on:
       - ".github/workflows/_tofu-*.yml"
       - ".github/workflows/tofu-github-*.yml"
 
-permissions: {}
+permissions:
+  contents: read
+  pull-requests: write
 
 concurrency:
   group: tofu-github-plan-${{ github.ref }}
