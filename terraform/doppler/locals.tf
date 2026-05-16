@@ -23,10 +23,10 @@ locals {
   project_configs = merge([
     for proj_name, proj_cfg in local.projects : {
       for config_name in proj_cfg.configs :
-        "${proj_name}/${config_name}" => {
-          project = proj_name
-          config  = config_name
-        }
+      "${proj_name}/${config_name}" => {
+        project = proj_name
+        config  = config_name
+      }
     }
   ]...)
 }
