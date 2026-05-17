@@ -33,7 +33,7 @@ jobs:
           curl -sf -X PATCH \
             -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" \
             -H "Content-Type: application/vnd.api+json" \
-            "https://app.terraform.io/api/v2/workspaces/ws-BtBJJnytQm9CWDpV" \
+            "https://app.terraform.io/api/v2/workspaces/${{ vars.TF_DOPPLER_WORKSPACE_ID }}" \
             -d '{"data":{"type":"workspaces","attributes":{"global-remote-state":true}}}'
 
   apply:
