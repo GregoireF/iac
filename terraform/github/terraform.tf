@@ -8,6 +8,10 @@ terraform {
       source  = "integrations/github"
       version = "~> 6.0"
     }
+    tfe = {
+      source  = "hashicorp/tfe"
+      version = "~> 0.60"
+    }
   }
 
   # HCP Terraform remote backend — runs plan/apply on TFC infrastructure.
