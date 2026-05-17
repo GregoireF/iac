@@ -9,9 +9,6 @@ on:
       - ".github/workflows/security-scan.yml"
   pull_request:
     branches: [main]
-    paths:
-      - "terraform/**"
-      - "modules/**"
   schedule:
     # Every Monday at 08:00 UTC — catch new CVEs on existing config
     - cron: "0 8 * * 1"
