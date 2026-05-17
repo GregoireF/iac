@@ -6,11 +6,12 @@ This repository is an Infrastructure as Code (IaC) engineering lab managed with 
 
 ## Stack
 
-- **IaC engine**: OpenTofu >= 1.9 (NOT Terraform — use `tofu` CLI)
-- **State backend**: HCP Terraform (remote execution mode)
+- **IaC engine**: OpenTofu >= 1.9, pinned to 1.12.0 locally via `.opentofu-version` (NOT Terraform — use `tofu` CLI)
+- **State backend**: HCP Terraform (remote execution mode, org `gregoiref`)
 - **Auth**: GitHub App (ephemeral tokens via `app_auth {}` block)
 - **CI/CD**: GitHub Actions
 - **AI workflows**: GitHub Models API (`GITHUB_TOKEN`, no external key)
+- **Secrets management**: Doppler — CI service tokens synced to GitHub Actions secrets (`DOPPLER_TOKEN`)
 
 ---
 
@@ -29,7 +30,9 @@ modules/<provider>/<name>/  ← reusable modules
 
 - Use `tofu` CLI, not `terraform`
 - Always set `required_version = ">= 1.9"` in `terraform {}` block
-- Pin provider versions with `~>` (patch-compatible): `version = "~> 6.0"`
+- Pin provider versions with `~>` (minor-compatible within major): `version = "~> 6.0"`
+- Pin module git sources to an immutable version tag: `ref=v1.0.0` — never `ref=main`
+- After bumping `modules/github/repository`, run the `release` workflow to create a new tag, then open a PR to update `refs` in `terraform/github/repos.tf`
 - Format with `tofu fmt` before committing
 - Use `for_each` over `count` for named resources
 - Use `locals {}` as the single source of truth for resource definitions
@@ -67,3 +70,5 @@ modules/<provider>/<name>/  ← reusable modules
 - `cancel-in-progress: false` on apply/destructive jobs
 - Use `permissions` minimal scope (principle of least privilege)
 - Path filters on `on.push.paths` / `on.pull_request.paths` to avoid unnecessary runs
+- Exception: security-scan has NO path filter on `pull_request` — it must run on every PR for OSSF Scorecard SASTID compliance
+- Required GitHub Actions variable: `TF_DOPPLER_WORKSPACE_ID` — workspace ID for the doppler HCP Terraform workspace
