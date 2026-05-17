@@ -9,5 +9,5 @@ resource "github_actions_secret" "doppler_token" {
 
   repository      = each.key
   secret_name     = "DOPPLER_TOKEN"
-  plaintext_value = data.tfe_outputs.doppler.values.ci_tokens[each.key]
+  plaintext_value = nonsensitive(data.tfe_outputs.doppler.values["ci_tokens"])[each.key]
 }
