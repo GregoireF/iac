@@ -164,10 +164,10 @@ locals {
   repo_labels = merge([
     for repo_name, _ in local.repositories : {
       for label_name, label_cfg in local.standard_labels :
-        "${repo_name}:${label_name}" => merge(label_cfg, {
-          repository = repo_name
-          name       = label_name
-        })
+      "${repo_name}:${label_name}" => merge(label_cfg, {
+        repository = repo_name
+        name       = label_name
+      })
     }
   ]...)
 }
