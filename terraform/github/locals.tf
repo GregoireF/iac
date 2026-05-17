@@ -20,10 +20,12 @@ locals {
 
       branch_protection = {
         enabled = true
-        # Exact check names confirmed after first PR run — add them here then.
-        required_status_checks       = []
-        # commit_message_pattern ruleset rule is unsupported on personal repos.
-        # Conventional commits are enforced via the commitlint CI workflow instead.
+        # "Commitlint" runs on every PR regardless of changed paths — safe to require.
+        # Path-conditional checks (plan, trivy…) are not listed to avoid blocking PRs
+        # where those workflows are not triggered.
+        # commit_message_pattern ruleset rule is unsupported on personal repos;
+        # conventional commits are enforced via the commitlint CI workflow instead.
+        required_status_checks       = ["Commitlint"]
         enforce_conventional_commits = false
         require_pr_reviews           = true
       }
@@ -47,7 +49,7 @@ locals {
 
       branch_protection = {
         enabled                = true
-        required_status_checks = []
+        required_status_checks = ["Commitlint"]
       }
 
       allow_auto_merge      = true
@@ -162,10 +164,10 @@ locals {
   repo_labels = merge([
     for repo_name, _ in local.repositories : {
       for label_name, label_cfg in local.standard_labels :
-        "${repo_name}:${label_name}" => merge(label_cfg, {
-          repository = repo_name
-          name       = label_name
-        })
+      "${repo_name}:${label_name}" => merge(label_cfg, {
+        repository = repo_name
+        name       = label_name
+      })
     }
   ]...)
 }
