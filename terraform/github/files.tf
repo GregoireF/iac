@@ -1,16 +1,11 @@
-# Inject the GitHub profile README into the GregoireF/GregoireF special repo.
-# GitHub displays this README on the public profile page.
-resource "github_repository_file" "profile_readme" {
-  repository          = module.repository["GregoireF"].name
-  branch              = "main"
-  file                = "README.md"
-  content             = file("${path.module}/templates/profile-readme.md")
-  commit_message      = "chore: update profile README [skip ci]"
-  overwrite_on_create = true
+# The profile README was bootstrapped by Terraform but ownership has moved to
+# the GregoireF/GregoireF repo and its own workflows (metrics.yml,
+# update-projects.yml, update-now.yml). The removed block drops the resource
+# from state without deleting the file so Terraform never overwrites it again.
+removed {
+  from = github_repository_file.profile_readme
 
   lifecycle {
-    ignore_changes = [commit_sha]
+    destroy = false
   }
-
-  depends_on = [module.repository]
 }

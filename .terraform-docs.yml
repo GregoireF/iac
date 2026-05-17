@@ -1,6 +1,6 @@
 formatter: markdown table
 
-version: ">=0.19"
+version: ">=0.24"
 
 output:
   file: README.md

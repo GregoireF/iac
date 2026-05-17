@@ -206,6 +206,11 @@ After creation:
 | `doppler_token` | Terraform | Yes | Doppler service token (account scope) |
 
 4. Create a **Team API token** → add as GitHub Actions secret `TF_API_TOKEN`
+5. Add the following **GitHub Actions repository variable** (Settings → Variables → Actions):
+
+| Variable | Value | Used by |
+|---|---|---|
+| `TF_DOPPLER_WORKSPACE_ID` | HCP Terraform workspace ID for the `doppler` workspace (e.g. `ws-xxxx`) | `tofu-github-apply.yml` pre-step that enables global remote state |
 
 ### 3. First apply
 
@@ -218,6 +223,23 @@ just apply doppler    # Create Doppler projects + service tokens
 ```
 
 After a successful apply, the import blocks in `terraform/github/imports.tf` can be removed.
+
+---
+
+## Bumping the module version
+
+`terraform/github/repos.tf` references the `modules/github/repository` module via a pinned git tag:
+
+```hcl
+source = "git::https://github.com/GregoireF/iac.git//modules/github/repository?ref=v1.0.0&depth=1"
+```
+
+After any change to `modules/github/repository/`:
+
+1. Merge the module change to `main`
+2. Run **Actions → release → Run workflow** — choose `patch`, `minor`, or `major`
+3. The workflow creates a new tag (e.g. `v1.1.0`) and a GitHub Release
+4. Open a PR to update the `ref=` in `terraform/github/repos.tf` to the new tag
 
 ---
 
