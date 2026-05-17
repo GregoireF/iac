@@ -6,6 +6,10 @@ terraform {
       source  = "DopplerHQ/doppler"
       version = "~> 1.0"
     }
+    tfe = {
+      source  = "hashicorp/tfe"
+      version = "~> 0.60"
+    }
   }
 
   # Separate HCP Terraform workspace from the github stack.
