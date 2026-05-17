@@ -56,6 +56,28 @@ locals {
       inject_standard_files = true
     }
 
+    addlicense = {
+      description            = "Fast, minimal license header manager for monorepos and CI pipelines."
+      topics                 = ["go", "cli", "license", "spdx", "compliance", "oss-tooling", "devtools", "ci"]
+      visibility             = "public"
+      has_issues             = true
+      has_wiki               = false
+      has_projects           = false
+      allow_merge_commit     = false
+      allow_squash_merge     = true
+      allow_rebase_merge     = false
+      delete_branch_on_merge = true
+      archived               = false
+
+      branch_protection = {
+        enabled                = true
+        required_status_checks = ["Commitlint"]
+        require_pr_reviews     = false
+      }
+
+      inject_standard_files = false
+    }
+
     # GitHub profile repository — README.md is injected via terraform/github/files.tf
     GregoireF = {
       description            = "GitHub profile."
