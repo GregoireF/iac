@@ -22,7 +22,22 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  enable-remote-state:
+    name: Enable doppler remote state sharing
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Enable global remote state on doppler workspace
+        run: |
+          curl -sf -X PATCH \
+            -H "Authorization: Bearer ${{ secrets.TF_API_TOKEN }}" \
+            -H "Content-Type: application/vnd.api+json" \
+            "https://app.terraform.io/api/v2/workspaces/ws-BtBJJnytQm9CWDpV" \
+            -d '{"data":{"type":"workspaces","attributes":{"global-remote-state":true}}}'
+
   apply:
+    needs: enable-remote-state
     uses: ./.github/workflows/_tofu-apply.yml
     with:
       stack: terraform/github
