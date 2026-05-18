@@ -10,9 +10,9 @@ data "tfe_outputs" "doppler" {
 
 # Sync Doppler CI service tokens to GitHub Actions secrets.
 # The token is used by workflows to authenticate with Doppler and pull secrets.
-# Extend the for_each set when a new repo gets a Doppler project + ci config.
+# To add a repo: add its name to doppler_repos in terraform/github/locals.tf.
 resource "github_actions_secret" "doppler_token" {
-  for_each = toset(["iac", "utils"])
+  for_each = local.doppler_repos
 
   repository      = each.key
   secret_name     = "DOPPLER_TOKEN"

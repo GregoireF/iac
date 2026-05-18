@@ -41,6 +41,9 @@ variable "config" {
       # Require changes to go through a PR (0 reviews required — solo-developer friendly).
       # github-actions[bot] retains a bypass so auto-commits (e.g. terraform-docs) still work.
       require_pr_reviews = optional(bool, false)
+      # Dismiss existing approvals when new commits are pushed to the PR branch.
+      # Improves OSSF BranchProtectionID score. No-op when require_pr_reviews = false.
+      dismiss_stale_reviews = optional(bool, false)
     })
 
     # GitHub Environments for deployment gates.
