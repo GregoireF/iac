@@ -67,7 +67,7 @@ resource "github_repository_ruleset" "default_branch" {
       for_each = var.config.branch_protection.require_pr_reviews ? [1] : []
       content {
         required_approving_review_count   = 0
-        dismiss_stale_reviews_on_push     = false
+        dismiss_stale_reviews_on_push     = var.config.branch_protection.dismiss_stale_reviews
         require_code_owner_review         = false
         require_last_push_approval        = false
         required_review_thread_resolution = false

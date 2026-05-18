@@ -1,6 +1,8 @@
 formatter: markdown table
 
-version: ">=0.24"
+# gh-actions bundles terraform-docs v0.20.0 (latest available in gh-actions v1.4.1).
+# Keep constraint at >=0.20 until a newer gh-actions release embeds v0.24+.
+version: ">=0.20"
 
 output:
   file: README.md

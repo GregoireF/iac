@@ -3,3 +3,8 @@ skip-check:
   # CKV_GIT_1: "Ensure GitHub repository is Private"
   # All repos in this IaC are intentionally public (open-source personal projects).
   - CKV_GIT_1
+  # CKV_TF_1: "Ensure module source uses a commit hash"
+  # Internal module is pinned to an immutable version tag (ref=vX.Y.Z).
+  # Commit traceability is available via `git tag -v`; raw hash is not required
+  # for a first-party module where the tag IS the version guarantee.
+  - CKV_TF_1

@@ -28,6 +28,7 @@ locals {
         required_status_checks       = ["Commitlint"]
         enforce_conventional_commits = false
         require_pr_reviews           = true
+        dismiss_stale_reviews        = true
       }
 
       # This repo manages its own .github/ files directly — skip Terraform injection.
@@ -54,6 +55,27 @@ locals {
 
       allow_auto_merge      = true
       inject_standard_files = true
+    }
+
+    homebrew-tap = {
+      description            = "Homebrew formulae for GregoireF tools."
+      topics                 = ["homebrew", "homebrew-tap", "cli", "devtools"]
+      visibility             = "public"
+      has_issues             = false
+      has_wiki               = false
+      has_projects           = false
+      allow_merge_commit     = false
+      allow_squash_merge     = true
+      allow_rebase_merge     = false
+      delete_branch_on_merge = true
+      archived               = false
+
+      branch_protection = {
+        enabled                = false
+        required_status_checks = []
+      }
+
+      inject_standard_files = false
     }
 
     addlicense = {
@@ -181,6 +203,12 @@ locals {
       description = "Dependency updates (Dependabot)"
     }
   }
+
+  # ---------------------------------------------------------------------------
+  # Repos with a Doppler project + ci config — get a DOPPLER_TOKEN Actions secret.
+  # Must be a subset of local.repositories keys.
+  # ---------------------------------------------------------------------------
+  doppler_repos = toset(["iac", "utils"])
 
   # Flatten repos × labels into a single map for for_each.
   repo_labels = merge([
