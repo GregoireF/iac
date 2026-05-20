@@ -12,3 +12,8 @@ import {
   id = "GregoireF"
   to = module.repository["GregoireF"].github_repository.this
 }
+
+import {
+  id = "notiftk"
+  to = module.repository["notiftk"].github_repository.this
+}
