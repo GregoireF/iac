@@ -102,6 +102,77 @@ locals {
       inject_standard_files = false
     }
 
+    addlicense-action = {
+      description            = "GitHub Action — add, check and remove license headers using addlicense."
+      topics                 = ["github-action", "license", "spdx", "reuse", "compliance", "ci", "devtools"]
+      visibility             = "public"
+      has_issues             = true
+      has_wiki               = false
+      has_discussions        = false
+      has_projects           = false
+      allow_merge_commit     = false
+      allow_squash_merge     = true
+      allow_rebase_merge     = false
+      allow_auto_merge       = true
+      delete_branch_on_merge = true
+      archived               = false
+
+      branch_protection = {
+        enabled                = true
+        required_status_checks = ["Commitlint"]
+        require_pr_reviews     = false
+      }
+
+      inject_standard_files = false
+    }
+
+    addlicense-npm = {
+      description            = "npm package — @gregoiref/addlicense CLI for Node.js projects and CI."
+      topics                 = ["npm", "nodejs", "cli", "license", "spdx", "reuse", "compliance", "devtools", "typescript"]
+      visibility             = "public"
+      has_issues             = true
+      has_wiki               = false
+      has_discussions        = false
+      has_projects           = false
+      allow_merge_commit     = false
+      allow_squash_merge     = true
+      allow_rebase_merge     = false
+      allow_auto_merge       = true
+      delete_branch_on_merge = true
+      archived               = false
+
+      branch_protection = {
+        enabled                = true
+        required_status_checks = ["Commitlint"]
+        require_pr_reviews     = false
+      }
+
+      inject_standard_files = false
+    }
+
+    addlicense-winget = {
+      description            = "WinGet manifests for addlicense — Windows Package Manager."
+      topics                 = ["winget", "windows", "package-manager", "license", "spdx", "cli", "devtools"]
+      visibility             = "public"
+      has_issues             = true
+      has_wiki               = false
+      has_discussions        = false
+      has_projects           = false
+      allow_merge_commit     = false
+      allow_squash_merge     = true
+      allow_rebase_merge     = false
+      allow_auto_merge       = false
+      delete_branch_on_merge = true
+      archived               = false
+
+      branch_protection = {
+        enabled                = false
+        required_status_checks = []
+      }
+
+      inject_standard_files = false
+    }
+
     notiftk = {
       description            = "TikTok live status API — REST, SSE et webhooks."
       topics                 = ["python", "fastapi", "tiktok", "api", "sse", "webhooks", "self-hosted"]
