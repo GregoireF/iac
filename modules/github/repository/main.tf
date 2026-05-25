@@ -5,9 +5,10 @@ resource "github_repository" "this" {
   description = var.config.description
   visibility  = var.config.visibility
 
-  has_issues   = var.config.has_issues
-  has_wiki     = var.config.has_wiki
-  has_projects = var.config.has_projects
+  has_issues       = var.config.has_issues
+  has_wiki         = var.config.has_wiki
+  has_projects     = var.config.has_projects
+  has_discussions  = var.config.has_discussions
 
   allow_merge_commit     = var.config.allow_merge_commit
   allow_squash_merge     = var.config.allow_squash_merge

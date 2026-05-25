@@ -20,9 +20,10 @@ variable "config" {
     description            = string
     topics                 = list(string)
     visibility             = string
-    has_issues             = bool
-    has_wiki               = bool
-    has_projects           = bool
+    has_issues       = bool
+    has_wiki         = bool
+    has_projects     = bool
+    has_discussions  = optional(bool, false)
     allow_merge_commit     = bool
     allow_squash_merge     = bool
     allow_rebase_merge     = bool
