@@ -50,7 +50,7 @@ locals {
 
       branch_protection = {
         enabled                = true
-        required_status_checks = ["Commitlint"]
+        required_status_checks = ["Lint PR title"]
       }
 
       allow_auto_merge      = true
