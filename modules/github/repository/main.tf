@@ -91,6 +91,15 @@ resource "github_repository_ruleset" "default_branch" {
     bypass_mode = "always"
   }
 
+  dynamic "bypass_actors" {
+    for_each = var.config.branch_protection.bypass_actors
+    content {
+      actor_id    = bypass_actors.value.actor_id
+      actor_type  = bypass_actors.value.actor_type
+      bypass_mode = bypass_actors.value.bypass_mode
+    }
+  }
+
 }
 
 # Deployment environments with optional wait timers and branch policies.

@@ -39,11 +39,19 @@ variable "config" {
       required_status_checks       = list(string)
       enforce_conventional_commits = optional(bool, false)
       # Require changes to go through a PR (0 reviews required — solo-developer friendly).
-      # github-actions[bot] retains a bypass so auto-commits (e.g. terraform-docs) still work.
       require_pr_reviews = optional(bool, false)
       # Dismiss existing approvals when new commits are pushed to the PR branch.
       # Improves OSSF BranchProtectionID score. No-op when require_pr_reviews = false.
       dismiss_stale_reviews = optional(bool, false)
+      # Additional bypass actors beyond the default Admin role bypass.
+      # Each entry maps to a github_repository_ruleset bypass_actors block.
+      # Common: { actor_id = 15368, actor_type = "Integration", bypass_mode = "always" }
+      # for github-actions[bot] (needed when the bot must push version-bump commits to main).
+      bypass_actors = optional(list(object({
+        actor_id    = number
+        actor_type  = string
+        bypass_mode = string
+      })), [])
     })
 
     # GitHub Environments for deployment gates.

@@ -121,6 +121,10 @@ locals {
         enabled                = true
         required_status_checks = ["Commitlint"]
         require_pr_reviews     = false
+        # Allow github-actions[bot] to push version-bump commits after tag-release.yml.
+        bypass_actors = [
+          { actor_id = 15368, actor_type = "Integration", bypass_mode = "always" }
+        ]
       }
 
       inject_standard_files = false
@@ -145,6 +149,10 @@ locals {
         enabled                = true
         required_status_checks = ["Commitlint"]
         require_pr_reviews     = false
+        # Allow github-actions[bot] to push version-bump commits after publish.yml.
+        bypass_actors = [
+          { actor_id = 15368, actor_type = "Integration", bypass_mode = "always" }
+        ]
       }
 
       inject_standard_files = false
