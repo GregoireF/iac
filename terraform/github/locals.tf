@@ -218,6 +218,29 @@ locals {
 
       inject_standard_files = false
     }
+
+    sandbox = {
+      description            = "Bac a sable — experimentations, prototypes et idees en cours."
+      topics                 = ["sandbox", "experiments", "prototypes", "lab"]
+      visibility             = "public"
+      has_issues             = true
+      has_wiki               = false
+      has_discussions        = true
+      has_projects           = false
+      allow_merge_commit     = false
+      allow_squash_merge     = true
+      allow_rebase_merge     = false
+      allow_auto_merge       = false
+      delete_branch_on_merge = true
+      archived               = false
+
+      branch_protection = {
+        enabled                = false
+        required_status_checks = []
+      }
+
+      inject_standard_files = false
+    }
   }
 
   # ---------------------------------------------------------------------------

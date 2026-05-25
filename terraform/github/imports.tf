@@ -17,3 +17,8 @@ import {
   id = "notiftk"
   to = module.repository["notiftk"].github_repository.this
 }
+
+import {
+  id = "sandbox"
+  to = module.repository["sandbox"].github_repository.this
+}
