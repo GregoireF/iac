@@ -228,6 +228,29 @@ locals {
       inject_standard_files = false
     }
 
+    forge-ui = {
+      description            = "Headless UI primitives for React, Vue and Nuxt. Zero styling."
+      topics                 = ["react", "vue", "nuxt", "typescript", "headless-ui", "ui-components", "accessibility", "aria", "web-components", "monorepo"]
+      visibility             = "public"
+      has_issues             = true
+      has_wiki               = false
+      has_projects           = false
+      allow_merge_commit     = false
+      allow_squash_merge     = true
+      allow_rebase_merge     = false
+      delete_branch_on_merge = true
+      archived               = false
+
+      branch_protection = {
+        enabled                = true
+        required_status_checks = ["Commitlint", "CI"]
+        require_pr_reviews     = false
+      }
+
+      allow_auto_merge      = true
+      inject_standard_files = true
+    }
+
     # GitHub profile repository — README.md is injected via terraform/github/files.tf
     GregoireF = {
       description            = "GitHub profile."
