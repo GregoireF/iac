@@ -242,9 +242,40 @@ locals {
       archived               = false
 
       branch_protection = {
-        enabled                = true
-        required_status_checks = ["Commitlint", "CI"]
-        require_pr_reviews     = false
+        enabled = true
+        # Real check names from ci.yml ("Typecheck · Lint · Test · Build"),
+        # e2e.yml ("E2E (chromium/firefox/webkit)"), and GitHub's built-in
+        # dependency-review action ("Dependency review").
+        # Previous value "CI" was a placeholder that never matched any check.
+        required_status_checks = [
+          "Typecheck · Lint · Test · Build",
+          "Commitlint",
+          "E2E (chromium)",
+          "E2E (firefox)",
+          "E2E (webkit)",
+          "Dependency review",
+        ]
+        require_pr_reviews = false
+        # Allow github-actions[bot] (changesets) to push version-bump commits to main.
+        bypass_actors = [
+          { actor_id = 15368, actor_type = "Integration", bypass_mode = "always" }
+        ]
+      }
+
+      additional_rulesets = {
+        protect-develop = {
+          branch_pattern = "refs/heads/develop"
+          # CI only — no E2E or Dependency Review (too slow for integration branch).
+          required_status_checks = [
+            "Typecheck · Lint · Test · Build",
+            "Commitlint",
+          ]
+          require_pr_reviews = false
+          bypass_actors = [
+            # github-actions[bot] — Renovate automerge pushes directly to develop.
+            { actor_id = 15368, actor_type = "Integration", bypass_mode = "always" }
+          ]
+        }
       }
 
       allow_auto_merge      = true
