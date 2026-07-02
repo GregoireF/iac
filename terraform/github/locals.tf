@@ -256,10 +256,10 @@ locals {
           "Dependency review",
         ]
         require_pr_reviews = false
-        # Allow github-actions[bot] (changesets) to push version-bump commits to main.
-        bypass_actors = [
-          { actor_id = 15368, actor_type = "Integration", bypass_mode = "always" }
-        ]
+        # bypass_actors: Admin role (actor_id=5) is already added by the module.
+        # Integration bypass (15368 = GitHub Actions) is only valid for org repos,
+        # not personal repos — removed to avoid 422 Validation Failed.
+        bypass_actors = []
       }
 
       additional_rulesets = {
@@ -271,10 +271,8 @@ locals {
             "Commitlint",
           ]
           require_pr_reviews = false
-          bypass_actors = [
-            # github-actions[bot] — Renovate automerge pushes directly to develop.
-            { actor_id = 15368, actor_type = "Integration", bypass_mode = "always" }
-          ]
+          # Renovate uses automergeType:pr — no direct push bypass needed.
+          bypass_actors = []
         }
       }
 
