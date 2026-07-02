@@ -276,8 +276,10 @@ locals {
         }
       }
 
-      allow_auto_merge      = true
-      inject_standard_files = true
+      allow_auto_merge = true
+      # forge-ui manages its own .github/ files (CODEOWNERS, PR template, issue
+      # templates, workflows). Standard file injection would overwrite them.
+      inject_standard_files = false
     }
 
     # GitHub profile repository — README.md is injected via terraform/github/files.tf
