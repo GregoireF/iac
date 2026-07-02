@@ -54,6 +54,19 @@ variable "config" {
       })), [])
     })
 
+    # Additional named rulesets targeting specific branches (e.g., develop).
+    # Key = ruleset name, value = ruleset config.
+    additional_rulesets = optional(map(object({
+      branch_pattern         = string
+      required_status_checks = optional(list(string), [])
+      require_pr_reviews     = optional(bool, false)
+      bypass_actors = optional(list(object({
+        actor_id    = number
+        actor_type  = string
+        bypass_mode = string
+      })), [])
+    })), {})
+
     # GitHub Environments for deployment gates.
     # Useful for staging/production promotion with wait timers.
     environments = optional(map(object({

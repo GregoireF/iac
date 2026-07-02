@@ -102,6 +102,69 @@ resource "github_repository_ruleset" "default_branch" {
 
 }
 
+# Additional named rulesets for non-default branches (e.g., develop).
+resource "github_repository_ruleset" "additional" {
+  for_each = var.config.additional_rulesets
+
+  name        = each.key
+  repository  = github_repository.this.name
+  target      = "branch"
+  enforcement = "active"
+
+  conditions {
+    ref_name {
+      include = [each.value.branch_pattern]
+      exclude = []
+    }
+  }
+
+  rules {
+    deletion         = true
+    non_fast_forward = true
+
+    dynamic "required_status_checks" {
+      for_each = length(each.value.required_status_checks) > 0 ? [1] : []
+      content {
+        strict_required_status_checks_policy = false
+
+        dynamic "required_check" {
+          for_each = each.value.required_status_checks
+          content {
+            context        = required_check.value
+            integration_id = 0
+          }
+        }
+      }
+    }
+
+    dynamic "pull_request" {
+      for_each = each.value.require_pr_reviews ? [1] : []
+      content {
+        required_approving_review_count   = 0
+        dismiss_stale_reviews_on_push     = false
+        require_code_owner_review         = false
+        require_last_push_approval        = false
+        required_review_thread_resolution = false
+      }
+    }
+  }
+
+  bypass_actors {
+    actor_id    = 5 # Admin repository role
+    actor_type  = "RepositoryRole"
+    bypass_mode = "always"
+  }
+
+  dynamic "bypass_actors" {
+    for_each = each.value.bypass_actors
+    content {
+      actor_id    = bypass_actors.value.actor_id
+      actor_type  = bypass_actors.value.actor_type
+      bypass_mode = bypass_actors.value.bypass_mode
+    }
+  }
+}
+
 # Deployment environments with optional wait timers and branch policies.
 # Used for staging/production gates and environment-scoped secrets/variables.
 resource "github_repository_environment" "this" {
