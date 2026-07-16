@@ -298,12 +298,11 @@ locals {
       branch_protection = {
         enabled = true
         # "Commitlint" matches the check name used successfully across every
-        # other repo in this file. This repo's own ci.yml ("test-and-build")
-        # check isn't listed yet — add it once the real check name is
-        # confirmed from an actual PR run (see forge-ui above: a guessed
-        # placeholder ("CI") never matched any check and had to be corrected
-        # after the fact — better to add it once verified than guess wrong).
-        required_status_checks = ["Commitlint"]
+        # other repo in this file. "test-and-build" confirmed from a real
+        # run of dd-toolkit's own ci.yml (job id, not the workflow's display
+        # name "CI" -- see forge-ui above for why a guessed display name
+        # doesn't match).
+        required_status_checks = ["Commitlint", "test-and-build"]
         require_pr_reviews     = false
       }
 
