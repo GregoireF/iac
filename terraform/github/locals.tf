@@ -311,6 +311,68 @@ locals {
       inject_standard_files = false
     }
 
+    ship-it = {
+      description            = "You write code, ship-it handles git and GitHub: branches, conventional commits, pull requests, stacks and undo."
+      topics                 = ["go", "cli", "git", "github", "pull-requests", "conventional-commits", "stacked-prs", "mcp", "developer-tools", "devtools"]
+      visibility             = "public"
+      has_issues             = true
+      has_wiki               = false
+      has_discussions        = true
+      has_projects           = false
+      allow_merge_commit     = false
+      allow_squash_merge     = true
+      allow_rebase_merge     = false
+      delete_branch_on_merge = true
+      archived               = false
+
+      branch_protection = {
+        enabled = true
+        # Job names of ship-it's own workflows (ci.yml, pr-title.yml, dco.yml,
+        # zizmor.yml, dependency-review.yml). They run on every pull request;
+        # the code scanning ones are skipped until CODE_SCANNING is set, and a
+        # skipped job counts as passed.
+        required_status_checks = [
+          "check (ubuntu-latest)",
+          "check (windows-latest)",
+          "check (macos-latest)",
+          "extension (ubuntu-latest)",
+          "extension (windows-latest)",
+          "title",
+          "signoff",
+          "zizmor",
+          "actionlint",
+          "dependency review",
+        ]
+        require_pr_reviews = false
+      }
+
+      # ship-it manages its own .github/ files (workflows, templates, CODEOWNERS).
+      inject_standard_files = false
+    }
+
+    # Public test repository for ship-it: real pull requests, stacks, rulesets
+    # and forks, and the output shown in its tutorial.
+    ship-it-sandbox = {
+      description            = "Test repository for ship-it: real pull requests, stacks and rulesets."
+      topics                 = ["ship-it", "sandbox"]
+      visibility             = "public"
+      has_issues             = true
+      has_wiki               = false
+      has_projects           = false
+      allow_merge_commit     = true
+      allow_squash_merge     = true
+      allow_rebase_merge     = true
+      delete_branch_on_merge = true
+      archived               = false
+
+      branch_protection = {
+        enabled                = false
+        required_status_checks = []
+      }
+
+      inject_standard_files = false
+    }
+
     # GitHub profile repository — README.md is injected via terraform/github/files.tf
     GregoireF = {
       description            = "GitHub profile."
