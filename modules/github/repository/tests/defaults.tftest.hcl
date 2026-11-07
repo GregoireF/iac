@@ -371,3 +371,58 @@ run "discussions_enabled_when_set" {
     error_message = "has_discussions must propagate from config to resource"
   }
 }
+
+# ---------------------------------------------------------------------------
+# Admin bypass
+# ---------------------------------------------------------------------------
+
+run "admin_bypass_on_by_default" {
+  command = plan
+
+  assert {
+    condition     = length([for a in github_repository_ruleset.default_branch[0].bypass_actors : a if a.actor_type == "RepositoryRole" && a.actor_id == 5]) == 1
+    error_message = "the Admin role must bypass the default branch's ruleset by default"
+  }
+}
+
+run "admin_bypass_off_applies_rules_to_admins" {
+  command = plan
+
+  variables {
+    config = {
+      description            = "Strict repo"
+      topics                 = []
+      visibility             = "public"
+      has_issues             = true
+      has_wiki               = false
+      has_projects           = false
+      allow_merge_commit     = false
+      allow_squash_merge     = true
+      allow_rebase_merge     = false
+      delete_branch_on_merge = true
+      archived               = false
+      inject_standard_files  = false
+      allow_auto_merge       = false
+
+      branch_protection = {
+        enabled                = true
+        required_status_checks = ["Plan"]
+        require_pr_reviews     = true
+        admin_bypass           = false
+      }
+
+      environments = {}
+      deploy_keys  = {}
+    }
+  }
+
+  assert {
+    condition     = length(github_repository_ruleset.default_branch[0].bypass_actors) == 0
+    error_message = "admin_bypass = false must leave no bypass actor"
+  }
+
+  assert {
+    condition     = length(github_repository_ruleset.default_branch[0].rules[0].pull_request) == 1
+    error_message = "require_pr_reviews must still add the pull request rule"
+  }
+}
