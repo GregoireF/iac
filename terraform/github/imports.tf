@@ -22,26 +22,6 @@ import {
 # standard set instead of creating them again (422 already_exists).
 
 import {
-  id = "ship-it:bug"
-  to = github_issue_label.standard["ship-it:bug"]
-}
-
-import {
-  id = "ship-it:documentation"
-  to = github_issue_label.standard["ship-it:documentation"]
-}
-
-import {
-  id = "ship-it:enhancement"
-  to = github_issue_label.standard["ship-it:enhancement"]
-}
-
-import {
-  id = "ship-it:question"
-  to = github_issue_label.standard["ship-it:question"]
-}
-
-import {
   id = "ship-it-sandbox:bug"
   to = github_issue_label.standard["ship-it-sandbox:bug"]
 }
