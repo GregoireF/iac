@@ -483,6 +483,11 @@ locals {
   # ---------------------------------------------------------------------------
   doppler_repos = toset(["iac", "utils"])
 
+  # Repositories that keep their own labels instead of the standard ones.
+  # ship-it brings its own taxonomy (kind/*, size/*, triage/*), applied by
+  # `ship sync`, and its issue forms use it (GregoireF/ship-it#7).
+  self_managed_labels = toset(["ship-it"])
+
   # Flatten repos × labels into a single map for for_each.
   repo_labels = merge([
     for repo_name, _ in local.repositories : {
@@ -491,6 +496,6 @@ locals {
         repository = repo_name
         name       = label_name
       })
-    }
+    } if !contains(local.self_managed_labels, repo_name)
   ]...)
 }
