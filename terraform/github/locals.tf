@@ -346,8 +346,9 @@ locals {
         # Every change goes through a pull request, the owner's included, and no
         # role bypasses the rules (OpenSSF Scorecard, Branch-Protection). No
         # approval is required: ship-it has one maintainer.
-        require_pr_reviews = true
-        admin_bypass       = false
+        require_pr_reviews    = true
+        admin_bypass          = false
+        dismiss_stale_reviews = true
       }
 
       # ship-it manages its own .github/ files (workflows, templates, CODEOWNERS).
