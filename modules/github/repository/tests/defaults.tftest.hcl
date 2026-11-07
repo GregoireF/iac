@@ -322,3 +322,52 @@ run "require_pr_reviews_off_by_default" {
     error_message = "ruleset exists (branch_protection.enabled = true in default vars)"
   }
 }
+
+# ---------------------------------------------------------------------------
+# Discussions
+# ---------------------------------------------------------------------------
+
+run "discussions_disabled_by_default" {
+  command = plan
+
+  assert {
+    condition     = github_repository.this.has_discussions == false
+    error_message = "has_discussions must default to false"
+  }
+}
+
+run "discussions_enabled_when_set" {
+  command = plan
+
+  variables {
+    config = {
+      description            = "Discussions repo"
+      topics                 = []
+      visibility             = "public"
+      has_issues             = true
+      has_wiki               = false
+      has_projects           = false
+      has_discussions        = true
+      allow_merge_commit     = false
+      allow_squash_merge     = true
+      allow_rebase_merge     = false
+      delete_branch_on_merge = true
+      archived               = false
+      inject_standard_files  = false
+      allow_auto_merge       = false
+
+      branch_protection = {
+        enabled                = false
+        required_status_checks = []
+      }
+
+      environments = {}
+      deploy_keys  = {}
+    }
+  }
+
+  assert {
+    condition     = github_repository.this.has_discussions == true
+    error_message = "has_discussions must propagate from config to resource"
+  }
+}
