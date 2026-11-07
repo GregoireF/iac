@@ -41,6 +41,9 @@ variable "config" {
       enforce_conventional_commits = optional(bool, false)
       # Require changes to go through a PR (0 reviews required — solo-developer friendly).
       require_pr_reviews = optional(bool, false)
+      # Let the Admin role bypass the default branch's ruleset (the default, to
+      # prevent self-locking). false applies the rules to administrators too.
+      admin_bypass = optional(bool, true)
       # Dismiss existing approvals when new commits are pushed to the PR branch.
       # Improves OSSF BranchProtectionID score. No-op when require_pr_reviews = false.
       dismiss_stale_reviews = optional(bool, false)

@@ -29,7 +29,8 @@ resource "github_repository" "this" {
 
 # Ruleset-based branch protection.
 # Protects the default branch against deletion, force-pushes, and optionally
-# enforces required status checks. Admins can bypass to prevent self-locking.
+# enforces required status checks. Admins can bypass to prevent self-locking,
+# unless branch_protection.admin_bypass is false.
 resource "github_repository_ruleset" "default_branch" {
   count = var.config.branch_protection.enabled ? 1 : 0
 
@@ -86,10 +87,15 @@ resource "github_repository_ruleset" "default_branch" {
     }
   }
 
-  bypass_actors {
-    actor_id    = 5 # Admin repository role
-    actor_type  = "RepositoryRole"
-    bypass_mode = "always"
+  # Admins can bypass to prevent self-locking, unless admin_bypass = false:
+  # then the rules apply to everyone (OpenSSF Scorecard, Branch-Protection).
+  dynamic "bypass_actors" {
+    for_each = var.config.branch_protection.admin_bypass ? [1] : []
+    content {
+      actor_id    = 5 # Admin repository role
+      actor_type  = "RepositoryRole"
+      bypass_mode = "always"
+    }
   }
 
   dynamic "bypass_actors" {
