@@ -419,12 +419,12 @@ locals {
       inject_standard_files = false
     }
 
-    # kiwa: find any project, run any task (CLI). Private until 0.1.0 is released.
+    # kiwa: find any project, run any task (CLI). Public from the start, like ship-it.
     # Labels come from ship-it's taxonomy through `ship sync` (.github/ship.json).
     kiwa = {
       description            = "Find any project, run any task: one fuzzy search over every task of every project, for you and your AI agents."
       topics                 = ["rust", "cli", "tui", "developer-tools", "devtools", "task-runner", "monorepo", "workspace", "mcp", "ai-agents"]
-      visibility             = "private"
+      visibility             = "public"
       has_issues             = true
       has_wiki               = false
       has_discussions        = true
