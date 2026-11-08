@@ -419,6 +419,54 @@ locals {
       inject_standard_files = false
     }
 
+    # kiwa: find any project, run any task (CLI). Private until 0.1.0 is released.
+    # Labels come from ship-it's taxonomy through `ship sync` (.github/ship.json).
+    kiwa = {
+      description            = "Find any project, run any task: one fuzzy search over every task of every project, for you and your AI agents."
+      topics                 = ["rust", "cli", "tui", "developer-tools", "devtools", "task-runner", "monorepo", "workspace", "mcp", "ai-agents"]
+      visibility             = "private"
+      has_issues             = true
+      has_wiki               = false
+      has_discussions        = true
+      has_projects           = false
+      allow_merge_commit     = false
+      allow_squash_merge     = true
+      allow_rebase_merge     = false
+      delete_branch_on_merge = true
+      archived               = false
+
+      branch_protection = {
+        enabled = true
+        # Job names of kiwa's own workflows. `ci passed` aggregates every CI job
+        # (tests on 3 OSes, real package managers, coverage, budgets, MSRV), so the
+        # CI matrix can change without touching this list. The code scanning jobs
+        # are skipped until CODE_SCANNING is set, and a skipped job counts as passed.
+        required_status_checks = [
+          "ci passed",
+          "title",
+          "signoff",
+          "zizmor",
+          "actionlint",
+          "dependency review",
+        ]
+        # Same rules as ship-it: every change through a pull request, no bypass,
+        # stale approvals dismissed; one maintainer, so no approval required.
+        require_pr_reviews    = true
+        admin_bypass          = false
+        dismiss_stale_reviews = true
+      }
+
+      # dist's release job (release.yml, publish-tap.yml) runs from v* tags, so the
+      # environment accepts any ref; HOMEBREW_TAP_SSH_KEY is an environment secret.
+      environments = {
+        release = {
+          deployment_branch_policy = "all"
+        }
+      }
+
+      # kiwa manages its own .github/ files (workflows, templates, CODEOWNERS).
+      inject_standard_files = false
+    }
     # GitHub profile repository — README.md is injected via terraform/github/files.tf
     GregoireF = {
       description            = "GitHub profile."
@@ -532,7 +580,7 @@ locals {
   # Repositories that keep their own labels instead of the standard ones.
   # ship-it brings its own taxonomy (kind/*, size/*, triage/*), applied by
   # `ship sync`, and its issue forms use it (GregoireF/ship-it#7).
-  self_managed_labels = toset(["ship-it"])
+  self_managed_labels = toset(["ship-it", "kiwa"])
 
   # Flatten repos × labels into a single map for for_each.
   repo_labels = merge([
