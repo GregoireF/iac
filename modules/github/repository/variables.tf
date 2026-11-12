@@ -38,6 +38,11 @@ variable "config" {
     branch_protection = object({
       enabled                      = bool
       required_status_checks       = list(string)
+      # Require a pull request's branch to be up to date with the default
+      # branch before it merges. false lets a green pull request merge at once
+      # (auto-merge), the CI on the default branch catching what two pull
+      # requests break together.
+      strict_status_checks         = optional(bool, true)
       enforce_conventional_commits = optional(bool, false)
       # Require changes to go through a PR (0 reviews required — solo-developer friendly).
       require_pr_reviews = optional(bool, false)

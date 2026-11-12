@@ -324,14 +324,22 @@ locals {
       allow_rebase_merge     = false
       delete_branch_on_merge = true
       archived               = false
+      # The maintainer's own pull requests merge once their checks are green
+      # (gh pr merge --auto); contributors' wait for the maintainer.
+      allow_auto_merge = true
 
       branch_protection = {
         enabled = true
         # Job names of ship-it's own workflows (ci.yml, pr-title.yml, dco.yml,
         # zizmor.yml, dependency-review.yml). They run on every pull request;
         # the code scanning ones are skipped until CODE_SCANNING is set, and a
-        # skipped job counts as passed.
+        # skipped job counts as passed. ci.yml skips the jobs a change does not
+        # need with `if:` (ship-it#146), so `changes`, which decides, is
+        # required: if it failed, the skipped jobs would read as passed.
+        # `authorship` checks the Authorship box of the template (ship-it#147).
         required_status_checks = [
+          "changes",
+          "authorship",
           "check (ubuntu-latest)",
           "check (windows-latest)",
           "check (macos-latest)",
@@ -343,6 +351,12 @@ locals {
           "actionlint",
           "dependency review",
         ]
+        # A green pull request merges without being brought up to date first:
+        # with one maintainer and auto-merge, "up to date" made every merge
+        # restart the CI of every other pull request. The CI of each push to
+        # main runs every job on every system and catches what two pull
+        # requests break together.
+        strict_status_checks = false
         # Every change goes through a pull request, the owner's included, and no
         # role bypasses the rules (OpenSSF Scorecard, Branch-Protection). No
         # approval is required: ship-it has one maintainer.

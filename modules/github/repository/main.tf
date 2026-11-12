@@ -53,7 +53,7 @@ resource "github_repository_ruleset" "default_branch" {
     dynamic "required_status_checks" {
       for_each = length(var.config.branch_protection.required_status_checks) > 0 ? [1] : []
       content {
-        strict_required_status_checks_policy = true
+        strict_required_status_checks_policy = var.config.branch_protection.strict_status_checks
 
         dynamic "required_check" {
           for_each = var.config.branch_protection.required_status_checks
