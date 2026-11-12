@@ -365,6 +365,31 @@ locals {
         dismiss_stale_reviews = true
       }
 
+      # Patch releases are cut from release/<minor> branches (release/0.1):
+      # the same pull request and checks as main, no bypass, so that a fix
+      # release never goes out untested. Only the checks those branches run:
+      # they keep the workflows of their minor version, before `changes` and
+      # `authorship` existed.
+      additional_rulesets = {
+        protect-release-branches = {
+          branch_pattern = "refs/heads/release/*"
+          required_status_checks = [
+            "check (ubuntu-latest)",
+            "check (windows-latest)",
+            "check (macos-latest)",
+            "extension (ubuntu-latest)",
+            "extension (windows-latest)",
+            "title",
+            "signoff",
+            "zizmor",
+            "actionlint",
+            "dependency review",
+          ]
+          require_pr_reviews = true
+          admin_bypass       = false
+        }
+      }
+
       # ship-it manages its own .github/ files (workflows, templates, CODEOWNERS).
       inject_standard_files = false
     }

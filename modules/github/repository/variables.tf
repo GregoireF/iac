@@ -69,6 +69,9 @@ variable "config" {
       branch_pattern         = string
       required_status_checks = optional(list(string), [])
       require_pr_reviews     = optional(bool, false)
+      # Let the Admin role bypass this ruleset, as by default for the default
+      # branch's (admin_bypass above).
+      admin_bypass = optional(bool, true)
       bypass_actors = optional(list(object({
         actor_id    = number
         actor_type  = string

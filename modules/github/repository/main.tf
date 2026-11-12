@@ -156,10 +156,13 @@ resource "github_repository_ruleset" "additional" {
     }
   }
 
-  bypass_actors {
-    actor_id    = 5 # Admin repository role
-    actor_type  = "RepositoryRole"
-    bypass_mode = "always"
+  dynamic "bypass_actors" {
+    for_each = each.value.admin_bypass ? [1] : []
+    content {
+      actor_id    = 5 # Admin repository role
+      actor_type  = "RepositoryRole"
+      bypass_mode = "always"
+    }
   }
 
   dynamic "bypass_actors" {
