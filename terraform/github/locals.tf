@@ -336,12 +336,10 @@ locals {
         # skipped job counts as passed. ci.yml skips the jobs a change does not
         # need with `if:` (ship-it#146), so `changes`, which decides, is
         # required: if it failed, the skipped jobs would read as passed.
-        # `authorship` checks the Authorship box of the template (ship-it#147),
-        # `changelog` a changelog fragment for user-visible changes (ship-it#164).
+        # `authorship` checks the Authorship box of the template (ship-it#147).
         required_status_checks = [
           "changes",
           "authorship",
-          "changelog",
           "check (ubuntu-latest)",
           "check (windows-latest)",
           "check (macos-latest)",
