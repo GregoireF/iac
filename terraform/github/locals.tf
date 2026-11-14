@@ -423,7 +423,7 @@ locals {
     # Labels come from ship-it's taxonomy through `ship sync` (.github/ship.json).
     kiwa = {
       description            = "Find any project, run any task: one fuzzy search over every task of every project, for you and your AI agents."
-      topics                 = ["rust", "cli", "tui", "developer-tools", "devtools", "task-runner", "monorepo", "workspace", "mcp", "ai-agents"]
+      topics                 = ["rust", "cli", "tui", "developer-tools", "devtools", "task-runner", "monorepo", "workspace", "docker", "devcontainer", "mcp", "ai-agents"]
       visibility             = "public"
       has_issues             = true
       has_wiki               = false
@@ -434,6 +434,9 @@ locals {
       allow_rebase_merge     = false
       delete_branch_on_merge = true
       archived               = false
+      # The maintainer's own pull requests merge once their checks are green
+      # (gh pr merge --auto); contributors' wait for the maintainer.
+      allow_auto_merge = true
 
       branch_protection = {
         enabled = true
@@ -449,6 +452,11 @@ locals {
           "actionlint",
           "dependency review",
         ]
+        # A green pull request merges without being brought up to date first, as
+        # for ship-it: with one maintainer and auto-merge, "up to date" would restart
+        # the CI of every open pull request; the CI of each push to main catches
+        # what two pull requests break together.
+        strict_status_checks = false
         # Same rules as ship-it: every change through a pull request, no bypass,
         # stale approvals dismissed; one maintainer, so no approval required.
         require_pr_reviews    = true
