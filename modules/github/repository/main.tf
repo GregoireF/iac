@@ -184,9 +184,16 @@ resource "github_repository_environment" "this" {
   environment = each.key
   wait_timer  = each.value.wait_timer_minutes
 
-  deployment_branch_policy {
-    protected_branches     = each.value.deployment_branch_policy == "protected"
-    custom_branch_policies = false
+  # "protected": only protected branches may deploy. "all": no policy block at
+  # all, which is how GitHub means any branch or tag; sending both flags as false
+  # is refused (422 "custom_branch_policies and protected_branches cannot have the
+  # same value"), which kiwa's release environment hit (GregoireF/iac#46).
+  dynamic "deployment_branch_policy" {
+    for_each = each.value.deployment_branch_policy == "protected" ? [1] : []
+    content {
+      protected_branches     = true
+      custom_branch_policies = false
+    }
   }
 
   depends_on = [github_repository.this]
