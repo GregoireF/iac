@@ -1,0 +1,44 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Role defaults (full binary list)
+      ansible.builtin.include_vars:
+        file: ../../defaults/main.yml
+        name: workstation_verify_defaults
+
+    - name: Expected binaries
+      ansible.builtin.set_fact:
+        workstation_verify_names: >-
+          {{ workstation_binaries_only
+             if workstation_binaries_only
+             else workstation_verify_defaults.workstation_binaries | map(attribute='name') | list }}
+
+    - name: Every expected binary is installed and executable
+      ansible.builtin.stat:
+        path: "/usr/local/bin/{{ item }}"
+      register: workstation_verify_bin
+      failed_when: not (workstation_verify_bin.stat.executable | default(false))
+      loop: "{{ workstation_verify_names }}"
+
+    - name: One version stamp per binary (idempotence and Renovate-driven reinstall)
+      ansible.builtin.find:
+        paths: /usr/local/lib/iac-tools
+      register: workstation_verify_stamps
+      failed_when: workstation_verify_stamps.matched != (workstation_verify_names | length)
+
+    - name: Smoke test the installed tools
+      ansible.builtin.command: "{{ item.cmd }}"
+      register: workstation_verify_run
+      changed_when: false
+      failed_when: item.expect not in workstation_verify_run.stdout
+      when: item.name in workstation_verify_names + ['go']
+      loop:
+        - { name: tofu, cmd: "tofu version", expect: "OpenTofu v1." }
+        - { name: kubectl, cmd: "kubectl version --client", expect: "Client Version: v1." }
+        - { name: age, cmd: "age --version", expect: "v1." }
+        - { name: age, cmd: "age-keygen --version", expect: "v1." }
+        - { name: go, cmd: "/usr/local/go/bin/go version", expect: "go1." }
+      loop_control:
+        label: "{{ item.cmd }}"

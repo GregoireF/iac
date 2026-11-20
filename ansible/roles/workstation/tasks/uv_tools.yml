@@ -1,0 +1,11 @@
+---
+# uv keeps a receipt per tool: re-running `uv tool install <spec> --with ...` is a no-op when the spec
+# and the injected packages are unchanged ("... is already installed"), and reinstalls otherwise.
+# So version bumps (Renovate) and --with changes are both picked up, without --force.
+- name: Uv tools | install or update
+  ansible.builtin.command: >-
+    {{ ansible_env.HOME }}/.local/bin/uv tool install --python 3.14 {{ item }}
+    {% for w in workstation_uv_tool_with[item.split('==')[0]] | default([]) %} --with '{{ w }}'{% endfor %}
+  loop: "{{ workstation_uv_tools }}"
+  register: workstation_uv_install
+  changed_when: "'is already installed' not in (workstation_uv_install.stdout ~ workstation_uv_install.stderr)"

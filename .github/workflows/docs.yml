@@ -1,42 +1,48 @@
 name: docs
 
+# Check-only: module READMEs are regenerated locally by the terraform-docs pre-commit hook
+# (`just docs`). CI never commits, so every commit on main has a single signed human author
+# (docs/adr/0002-solo-flow.md).
 on:
   pull_request:
     branches: [main]
-    paths:
-      - "modules/**"
+    paths: ["modules/**", ".terraform-docs.yml"]
   push:
     branches: [main]
-    paths:
-      - "modules/**"
+    paths: ["modules/**", ".terraform-docs.yml"]
 
-permissions:
-  contents: read
+permissions: {}
+
+env:
+  TFDOCS_VERSION: "0.25.1" # renovate: datasource=github-releases depName=terraform-docs/terraform-docs
 
 jobs:
   terraform-docs:
-    name: terraform-docs
+    name: terraform-docs up to date
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
 
-      - name: Generate / check terraform-docs
-        uses: terraform-docs/gh-actions@6de6da0cefcc6b4b7a5cbea4d79d97060733093c # v1
-        with:
-          recursive: true
-          recursive-path: modules/
-          config-file: .terraform-docs.yml
-          output-method: inject
-          # Always auto-commit generated docs so PRs never fail on a missing
-          # terraform-docs run. The bot pushes to the PR branch directly.
-          git-push: "true"
-          git-push-user-name: "github-actions[bot]"
-          git-push-user-email: "41898282+github-actions[bot]@users.noreply.github.com"
-          git-commit-message: "docs: regenerate terraform-docs [skip ci]"
-          fail-on-diff: "false"
+      - name: Install terraform-docs (checksum verified)
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP"
+          base=https://github.com/terraform-docs/terraform-docs/releases/download/v${TFDOCS_VERSION}
+          tgz=terraform-docs-v${TFDOCS_VERSION}-linux-amd64.tar.gz
+          curl -fsSLO "$base/$tgz"
+          curl -fsSL "$base/terraform-docs-v${TFDOCS_VERSION}.sha256sum" | grep " ${tgz}$" | sha256sum -c -
+          tar -xzf "$tgz" terraform-docs
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+
+      - name: Regenerate and diff
+        run: |
+          scripts/terraform-docs.sh
+          git diff --exit-code -- modules/ || {
+            echo "::error::Module docs are stale. Run 'just docs' (or commit with pre-commit installed)."
+            exit 1
+          }

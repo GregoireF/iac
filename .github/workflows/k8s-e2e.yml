@@ -1,0 +1,59 @@
+# End-to-end GitOps test: the SAME Ansible playbook as on the workstation (ansible/playbooks/cluster.yml)
+# creates a k3d (k3s) cluster + registry, installs Flux, pushes kubernetes/ as an OCI artifact and waits
+# until every Flux Kustomization is Ready. Green here = it will come up on the laptop too.
+name: k8s-e2e
+
+on:
+  pull_request:
+    paths: ["kubernetes/**", "ansible/**", ".github/workflows/k8s-e2e.yml"]
+  push:
+    branches: [main]
+    paths: ["kubernetes/**", "ansible/**"]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: k8s-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: k3d + Flux
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install k3d (official binary, checksum verified)
+        env:
+          K3D_VERSION: "5.9.0" # renovate: datasource=github-releases depName=k3d-io/k3d
+        run: |
+          set -euo pipefail
+          base="https://github.com/k3d-io/k3d/releases/download/v${K3D_VERSION}"
+          curl -fsSL -o "$RUNNER_TEMP/k3d" "$base/k3d-linux-amd64"
+          # checksums.txt lists "_dist/k3d-linux-amd64"
+          expected="$(curl -fsSL "$base/checksums.txt" | awk '$2 == "_dist/k3d-linux-amd64" {print $1}')"
+          echo "${expected}  $RUNNER_TEMP/k3d" | sha256sum -c -
+          install -m 0755 "$RUNNER_TEMP/k3d" /usr/local/bin/k3d
+          k3d version
+      - uses: fluxcd/flux2/action@3fa784edd773d56630bb9f62645e08f70c2cff0a # v2.10.0
+        with:
+          version: "2.10.0" # renovate: datasource=github-releases depName=fluxcd/flux2
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+      - name: Ansible
+        run: uv tool install --python 3.14 "ansible-core==2.22.0"
+      - name: Cluster + Flux (ansible/playbooks/cluster.yml)
+        working-directory: ansible
+        run: ansible-playbook playbooks/cluster.yml
+      - name: Diagnostics
+        if: failure()
+        run: |
+          flux get all -A || true
+          kubectl get pods -A || true
+          kubectl -n flux-system logs deploy/source-controller --tail=100 || true
+          kubectl -n flux-system logs deploy/kustomize-controller --tail=100 || true
+          kubectl -n flux-system logs deploy/helm-controller --tail=100 || true

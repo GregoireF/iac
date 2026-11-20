@@ -6,8 +6,8 @@
 # Then run: mise install
 
 [tools]
-go     = "1.23"
-python = "3.12"
+go     = "1.27"
+python = "3.14"
 
 [env]
 # Ensure go binaries are on PATH

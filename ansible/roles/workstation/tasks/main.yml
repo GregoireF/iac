@@ -1,0 +1,28 @@
+---
+- name: Base packages
+  become: true
+  ansible.builtin.apt:
+    name: "{{ workstation_apt_packages }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Docker Engine
+  ansible.builtin.import_tasks: docker.yml
+  when: workstation_docker_enabled
+
+- name: Release binaries (official downloads, checksum verified)
+  ansible.builtin.include_tasks: binary.yml
+  loop: >-
+    {{ workstation_binaries if not workstation_binaries_only
+       else workstation_binaries | selectattr('name', 'in', workstation_binaries_only) | list }}
+  loop_control:
+    loop_var: tool
+    label: "{{ tool.name }} {{ tool.version }}"
+
+- name: Go toolchain
+  ansible.builtin.import_tasks: go.yml
+
+- name: Python CLIs as uv tools
+  ansible.builtin.import_tasks: uv_tools.yml
+  when: workstation_uv_tools | length > 0

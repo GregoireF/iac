@@ -1,0 +1,8 @@
+---
+# Local Kubernetes: k3d (k3s) + k3d registry + Flux reconciling kubernetes/ from an OCI artifact.
+# Run: cd ansible && ansible-playbook playbooks/cluster.yml
+- name: Local cluster
+  hosts: workstation
+  roles:
+    - role: k3d_cluster
+    - role: flux_bootstrap

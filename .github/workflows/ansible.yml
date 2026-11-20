@@ -1,0 +1,61 @@
+# Ansible gates, same commands as `just ansible-lint` and `just molecule`:
+# - ansible-lint, production profile
+# - Molecule: the workstation role in Debian trixie with EVERY binary (IAC_MOLECULE_BINARIES=all),
+#   so each weekly Renovate bump is downloaded, checksum-verified and smoke-tested before it automerges.
+# The cluster roles are exercised for real by k8s-e2e.yml.
+name: ansible
+
+on:
+  pull_request:
+    paths: ["ansible/**", ".github/workflows/ansible.yml"]
+  push:
+    branches: [main]
+    paths: ["ansible/**"]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ansible-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: ansible-lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+      - name: Install
+        run: uv tool install --python 3.14 "ansible-lint==26.11.0" --with "ansible-core==2.22.0"
+      - name: ansible-lint
+        working-directory: ansible
+        run: ansible-lint --profile production
+
+  molecule:
+    name: Molecule (workstation, all binaries)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+      # Same tool layout as the workstation role: Molecule calls the ansible-playbook on PATH,
+      # so the Docker SDK is injected into ansible-core as well.
+      - name: Install
+        run: |
+          uv tool install --python 3.14 "ansible-core==2.22.0" --with "docker==7.2.0" --with "requests==2.34.2"
+          uv tool install --python 3.14 "molecule==26.11.0" --with "ansible-core==2.22.0" --with "molecule-plugins[docker]==26.11.0"
+      - name: molecule test
+        working-directory: ansible/roles/workstation
+        env:
+          IAC_MOLECULE_BINARIES: all
+        run: molecule test

@@ -1,0 +1,15 @@
+# podinfo: Flux's reference demo application, installed from its OCI Helm chart.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: podinfo
+  namespace: apps
+spec:
+  interval: 1h
+  url: oci://ghcr.io/stefanprodan/charts/podinfo
+  ref:
+    # renovate: datasource=github-releases depName=stefanprodan/podinfo
+    tag: 6.17.0
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy

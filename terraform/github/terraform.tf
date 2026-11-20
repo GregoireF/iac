@@ -1,16 +1,16 @@
 terraform {
   # OpenTofu — open-source IaC engine (MPL-2 licence, fork post-HashiCorp BSL).
   # https://opentofu.org
-  required_version = ">= 1.9"
+  required_version = ">= 1.13"
 
   required_providers {
     github = {
       source  = "integrations/github"
-      version = "~> 6.0"
+      version = "~> 6.13"
     }
     tfe = {
       source  = "hashicorp/tfe"
-      version = "~> 0.60"
+      version = "~> 0.84"
     }
   }
 

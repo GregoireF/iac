@@ -1,0 +1,150 @@
+---
+# Every tool is downloaded from its official release and verified by checksum.
+# `checksum` is either "sha256:<url of the vendor checksum file>" (preferred) or a pinned "sha256:<hash>"
+# when the vendor publishes no checksum file (age) or a hash-only file (kubectl, Go).
+# URLs use @V@ as the version placeholder. Renovate updates `version` through the `# renovate:` comments (see renovate.json).
+
+workstation_user: "{{ ansible_env.SUDO_USER | default(ansible_user_id) }}"
+workstation_bin_dir: /usr/local/bin
+
+workstation_apt_packages:
+  - ca-certificates
+  - curl
+  - git
+  - gnupg
+  - jq
+  - make
+  - rsync # molecule-plugins docker driver copies the build context with it
+  - shellcheck
+  - unzip
+  - xz-utils
+
+# Docker Engine from Docker's official apt repository
+# (https://docs.docker.com/engine/install/debian/)
+workstation_docker_enabled: true
+
+# Install only these names from workstation_binaries (empty = all), e.g. -e '{"workstation_binaries_only":["tofu"]}'
+workstation_binaries_only: []
+
+workstation_binaries:
+  # renovate: datasource=github-releases depName=opentofu/opentofu
+  - name: tofu
+    version: "1.13.9"
+    url: "https://github.com/opentofu/opentofu/releases/download/v@V@/tofu_@V@_linux_amd64.tar.gz"
+    checksum: "sha256:https://github.com/opentofu/opentofu/releases/download/v@V@/tofu_@V@_SHA256SUMS"
+    archive: true
+  # renovate: datasource=github-releases depName=k3d-io/k3d
+  - name: k3d
+    version: "5.9.0"
+    url: "https://github.com/k3d-io/k3d/releases/download/v@V@/k3d-linux-amd64"
+    # checksums.txt lists '_dist/k3d-linux-amd64' (prefixed path), which get_url cannot match:
+    # hash copied from that official file for v5.9.0 — update it together with the version.
+    checksum: "sha256:06d8f25bc3a971c4eb29e0ff08429b180402db0f4dec838c9eac427e296800a0"
+  # renovate: datasource=github-releases depName=kubernetes/kubernetes
+  - name: kubectl
+    version: "1.37.2"
+    url: "https://dl.k8s.io/release/v@V@/bin/linux/amd64/kubectl"
+    # hash-only file (https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/), accepted by get_url
+    checksum: "sha256:https://dl.k8s.io/release/v@V@/bin/linux/amd64/kubectl.sha256"
+  # renovate: datasource=github-releases depName=helm/helm
+  - name: helm
+    version: "4.3.2"
+    url: "https://get.helm.sh/helm-v@V@-linux-amd64.tar.gz"
+    checksum: "sha256:https://get.helm.sh/helm-v@V@-linux-amd64.tar.gz.sha256sum"
+    archive: true
+    archive_path: linux-amd64/helm
+  # renovate: datasource=github-releases depName=fluxcd/flux2
+  - name: flux
+    version: "2.10.0"
+    url: "https://github.com/fluxcd/flux2/releases/download/v@V@/flux_@V@_linux_amd64.tar.gz"
+    checksum: "sha256:https://github.com/fluxcd/flux2/releases/download/v@V@/flux_@V@_checksums.txt"
+    archive: true
+  # renovate: datasource=github-releases depName=getsops/sops
+  - name: sops
+    version: "3.13.3"
+    url: "https://github.com/getsops/sops/releases/download/v@V@/sops-v@V@.linux.amd64"
+    checksum: "sha256:https://github.com/getsops/sops/releases/download/v@V@/sops-v@V@.checksums.txt"
+  # renovate: datasource=github-releases depName=FiloSottile/age
+  - name: age
+    version: "1.3.2"
+    url: "https://github.com/FiloSottile/age/releases/download/v@V@/age-v@V@-linux-amd64.tar.gz"
+    # no checksum file is published (only a provenance proof): hash pinned on 2026-11-19
+    checksum: "sha256:cbe24006683f8eb669266162894b9a522a1af52f2665fbc63a4bb032ed26ac10"
+    archive: true
+    archive_path: age/age
+    extra_from_archive: [age/age-keygen]
+  # renovate: datasource=github-releases depName=terraform-linters/tflint
+  - name: tflint
+    version: "0.66.0"
+    url: "https://github.com/terraform-linters/tflint/releases/download/v@V@/tflint_linux_amd64.zip"
+    checksum: "sha256:https://github.com/terraform-linters/tflint/releases/download/v@V@/checksums.txt"
+    archive: true
+  # renovate: datasource=github-releases depName=terraform-docs/terraform-docs
+  - name: terraform-docs
+    version: "0.25.1"
+    url: "https://github.com/terraform-docs/terraform-docs/releases/download/v@V@/terraform-docs-v@V@-linux-amd64.tar.gz"
+    checksum: "sha256:https://github.com/terraform-docs/terraform-docs/releases/download/v@V@/terraform-docs-v@V@.sha256sum"
+    archive: true
+  # renovate: datasource=github-releases depName=aquasecurity/trivy
+  - name: trivy
+    version: "0.76.2"
+    url: "https://github.com/aquasecurity/trivy/releases/download/v@V@/trivy_@V@_Linux-64bit.tar.gz"
+    checksum: "sha256:https://github.com/aquasecurity/trivy/releases/download/v@V@/trivy_@V@_checksums.txt"
+    archive: true
+  # renovate: datasource=github-releases depName=casey/just
+  - name: just
+    version: "1.59.0"
+    url: "https://github.com/casey/just/releases/download/@V@/just-@V@-x86_64-unknown-linux-musl.tar.gz"
+    checksum: "sha256:https://github.com/casey/just/releases/download/@V@/SHA256SUMS"
+    archive: true
+
+  # --- policy-as-code ---
+  # renovate: datasource=github-releases depName=open-policy-agent/conftest
+  - name: conftest
+    version: "0.71.1"
+    url: "https://github.com/open-policy-agent/conftest/releases/download/v@V@/conftest_@V@_Linux_x86_64.tar.gz"
+    checksum: "sha256:https://github.com/open-policy-agent/conftest/releases/download/v@V@/checksums.txt"
+    archive: true
+  # renovate: datasource=github-releases depName=open-policy-agent/opa
+  - name: opa
+    version: "1.22.4"
+    url: "https://github.com/open-policy-agent/opa/releases/download/v@V@/opa_linux_amd64_static"
+    checksum: "sha256:https://github.com/open-policy-agent/opa/releases/download/v@V@/opa_linux_amd64_static.sha256"
+  # renovate: datasource=github-releases depName=kyverno/kyverno
+  - name: kyverno
+    version: "1.20.0"
+    url: "https://github.com/kyverno/kyverno/releases/download/v@V@/kyverno-cli_v@V@_linux_x86_64.tar.gz"
+    checksum: "sha256:https://github.com/kyverno/kyverno/releases/download/v@V@/checksums.txt"
+    archive: true
+  # renovate: datasource=github-releases depName=yannh/kubeconform
+  - name: kubeconform
+    version: "0.8.0"
+    url: "https://github.com/yannh/kubeconform/releases/download/v@V@/kubeconform-linux-amd64.tar.gz"
+    checksum: "sha256:https://github.com/yannh/kubeconform/releases/download/v@V@/CHECKSUMS"
+    archive: true
+  # renovate: datasource=github-releases depName=rhysd/actionlint
+  - name: actionlint
+    version: "1.7.12"
+    url: "https://github.com/rhysd/actionlint/releases/download/v@V@/actionlint_@V@_linux_amd64.tar.gz"
+    checksum: "sha256:https://github.com/rhysd/actionlint/releases/download/v@V@/actionlint_@V@_checksums.txt"
+    archive: true
+
+# Go toolchain (Terratest), verified against the hash-only .sha256 file published next to each archive
+# renovate: datasource=golang-version depName=go
+workstation_go_version: "1.27.4"
+
+# Python CLIs installed as isolated uv tools (uv is installed by scripts/wsl/new-distro.ps1)
+workstation_uv_tools:
+  # Bootstrapped by new-distro.ps1, then owned here (adds the Python libs community.docker needs)
+  - "ansible-core==2.22.0"
+  - "zizmor==1.32.0"
+  - "checkov==3.4.5"
+  - "pre-commit==4.7.0"
+  - "ansible-lint==26.11.0"
+  - "molecule==26.11.0"
+
+# Extra packages injected into a tool's isolated environment (Molecule drives Ansible and Docker)
+workstation_uv_tool_with:
+  # Molecule runs the ansible-playbook found on PATH (this tool), so the Docker SDK must live here too
+  ansible-core: ["docker==7.2.0", "requests==2.34.2"]
+  molecule: ["ansible-core==2.22.0", "molecule-plugins[docker]==26.11.0"]

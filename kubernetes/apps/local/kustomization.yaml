@@ -1,0 +1,5 @@
+# Local (kind) overlay of the applications.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../base/podinfo

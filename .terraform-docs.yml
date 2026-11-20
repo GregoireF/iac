@@ -1,8 +1,7 @@
 formatter: markdown table
 
-# gh-actions bundles terraform-docs v0.20.0 (latest available in gh-actions v1.4.1).
-# Keep constraint at >=0.20 until a newer gh-actions release embeds v0.24+.
-version: ">=0.20"
+# Same binary locally (ansible workstation role) and in CI (docs.yml), both pinned by Renovate.
+version: ">= 0.25"
 
 output:
   file: README.md

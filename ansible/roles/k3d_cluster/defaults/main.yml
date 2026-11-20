@@ -1,0 +1,15 @@
+---
+# k3s in Docker (k3d, https://k3d.io): same distribution as the target self-hosted cluster
+# (Traefik ingress and local-path storage built in), locally and in CI.
+k3d_cluster_name: iac
+# renovate: datasource=docker depName=rancher/k3s
+k3d_cluster_k3s_image: "rancher/k3s:v1.37.2-k3s1@sha256:21ea6e0fac4e3930c2ce8aa40ddd41a8b18cb3e9a0222c030dc005e7e88c4332"
+k3d_cluster_agents: 1
+
+# k3d-managed registry: container "k3d-<name>"; host side localhost:<port>, cluster side k3d-<name>:5000
+k3d_cluster_registry_name: iac-registry
+k3d_cluster_registry_port: 5001
+
+# Host ports for the built-in Traefik load balancer
+k3d_cluster_http_port: 8080
+k3d_cluster_https_port: 8443
