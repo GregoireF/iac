@@ -1,7 +1,7 @@
 repos:
   # Conventional commit message validation
   - repo: https://github.com/compilerla/conventional-pre-commit
-    rev: v3.4.0
+    rev: v4.5.0
     hooks:
       - id: conventional-pre-commit
         stages: [commit-msg]
@@ -21,7 +21,7 @@ repos:
 
   # General hygiene
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
         exclude: "^modules/.*/templates/"
@@ -34,6 +34,15 @@ repos:
       - id: mixed-line-ending
         args: [--fix=lf]
 
+  # Single human author + DCO sign-off (docs/adr/0002-solo-flow.md)
+  - repo: local
+    hooks:
+      - id: commit-msg-policy
+        name: Commit message policy (no co-author trailer, Signed-off-by)
+        entry: scripts/check-commit-msg.sh
+        language: script
+        stages: [commit-msg]
+
   # OpenTofu — format and validate
   # Requires `tofu` in PATH (installed by tenv via .opentofu-version)
   - repo: local
@@ -44,6 +53,15 @@ repos:
         entry: tofu fmt -check -recursive
         language: system
         types_or: [terraform, hcl]
+        pass_filenames: false
+
+      # Docs are generated here, never by a CI bot (single signed author, ADR 0002).
+      # The hook rewrites stale READMEs; pre-commit then stops so they can be staged.
+      - id: terraform-docs
+        name: terraform-docs (module READMEs)
+        entry: scripts/terraform-docs.sh
+        language: script
+        files: ^(modules/|\.terraform-docs\.yml$)
         pass_filenames: false
 
       - id: tofu-validate
