@@ -91,34 +91,75 @@ security: trivy checkov
 
 # ─── Docs ─────────────────────────────────────────────────────────────────────
 
-# Generate terraform-docs for all modules
+# Inject terraform-docs into every module README (.terraform-docs.yml)
 docs:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    for mod in modules/*/*; do
-      if [ -f "$mod/variables.tf" ]; then
-        echo "→ $mod"
-        terraform-docs markdown table --output-file README.md "$mod"
-      fi
-    done
+    scripts/terraform-docs.sh
 
-# Check that docs are up-to-date (fails if terraform-docs would make changes)
-docs-check:
+# Check that module docs are up to date (same as CI)
+docs-check: docs
+    git diff --exit-code -- modules/
+
+# ─── Policy, Kubernetes, Ansible, workflows ───────────────────────────────────
+
+# OPA unit tests for the OpenTofu plan policies
+policy:
+    opa test policies/opentofu -v
+
+# Render deployed overlays, then kubeconform + Kyverno (same script as CI)
+k8s:
+    scripts/check-manifests.sh
+
+# Note: ANSIBLE_CONFIG is explicit because Ansible ignores ansible.cfg in a
+# world-writable directory such as /mnt/d under WSL.
+
+# ansible-lint, production profile
+ansible-lint:
+    cd ansible && ANSIBLE_CONFIG=ansible.cfg ansible-lint --profile production
+
+# Molecule: workstation role in a Debian trixie container (create, converge, idempotence, verify)
+molecule:
+    cd ansible/roles/workstation && molecule test
+
+# Lint GitHub Actions workflows (syntax + security)
+gha:
+    actionlint
+    zizmor --min-severity medium .github/workflows
+
+# Check commit messages on the branch vs origin/main (no co-author trailer, Signed-off-by)
+commits base="origin/main":
     #!/usr/bin/env bash
     set -euo pipefail
-    for mod in modules/*/*; do
-      if [ -f "$mod/variables.tf" ]; then
-        echo "→ $mod"
-        terraform-docs markdown table --output-file README.md "$mod"
-      fi
+    tmp="$(mktemp)"; trap 'rm -f "$tmp"' EXIT
+    for c in $(git rev-list "{{ base }}..HEAD"); do
+      git log -1 --format=%B "$c" >"$tmp"
+      scripts/check-commit-msg.sh "$tmp" || { echo "✗ $c"; exit 1; }
     done
-    git diff --exit-code modules/
+    echo "✓ commits OK"
+
+# ─── Local cluster (k3d + Flux) ───────────────────────────────────────────────
+
+# Create/refresh the k3d cluster and reconcile kubernetes/ through Flux
+up:
+    cd ansible && ANSIBLE_CONFIG=ansible.cfg ansible-playbook playbooks/cluster.yml
+
+# Delete the local cluster and its registry
+down:
+    k3d cluster delete iac || true
+    k3d registry delete k3d-iac-registry || true
+
+# Provision the WSL workstation tools (idempotent)
+workstation:
+    cd ansible && ANSIBLE_CONFIG=ansible.cfg ansible-playbook playbooks/workstation.yml
 
 # ─── All checks (mirrors CI) ──────────────────────────────────────────────────
 
-# Run all local checks: fmt, validate, lint, test, security
-check: fmt-check validate lint test security
+# Fast gates, no cluster: everything CI runs on a pull request except k8s-e2e
+check: fmt-check validate lint test policy k8s ansible-lint gha security
     @echo "✓ All checks passed."
+
+# Full gates including the k3d + Flux end-to-end run
+check-all: check up
+    @echo "✓ All checks + e2e passed."
 
 # ─── Stacks ───────────────────────────────────────────────────────────────────
 

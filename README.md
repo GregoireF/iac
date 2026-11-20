@@ -1,14 +1,14 @@
 # iac
 
 > Agency-level Infrastructure as Code — GitHub automation, secrets management,
-> and AI-powered workflows, fully managed with OpenTofu.
+> and self-updating CI (Renovate, zizmor, Trivy, Checkov), fully managed with OpenTofu.
 
 [![OpenTofu Plan](https://github.com/GregoireF/iac/actions/workflows/tofu-github-plan.yml/badge.svg)](https://github.com/GregoireF/iac/actions/workflows/tofu-github-plan.yml)
 [![Security Scan](https://github.com/GregoireF/iac/actions/workflows/security-scan.yml/badge.svg)](https://github.com/GregoireF/iac/actions/workflows/security-scan.yml)
 [![Unit Tests](https://github.com/GregoireF/iac/actions/workflows/tofu-test.yml/badge.svg)](https://github.com/GregoireF/iac/actions/workflows/tofu-test.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/GregoireF/iac/badge)](https://securityscorecards.dev/viewer/?uri=github.com/GregoireF/iac)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![OpenTofu](https://img.shields.io/badge/OpenTofu-%3E%3D1.9-7b2d8b)](https://opentofu.org)
+[![OpenTofu](https://img.shields.io/badge/OpenTofu-%3E%3D1.13-7b2d8b)](https://opentofu.org)
 
 ---
 
@@ -16,12 +16,11 @@
 
 | Layer | Tool | Purpose |
 |---|---|---|
-| IaC engine | [OpenTofu](https://opentofu.org) `>= 1.9` | Plan + apply all infrastructure |
+| IaC engine | [OpenTofu](https://opentofu.org) `>= 1.13` | Plan + apply all infrastructure |
 | Remote backend | [HCP Terraform](https://app.terraform.io) | Remote execution, encrypted state, workspace secrets |
 | Auth | GitHub App (ephemeral tokens) | Scoped GitHub API access — no long-lived PATs |
 | Secrets | [Doppler](https://doppler.com) | Project-level secrets synced across all repos |
 | CI/CD | GitHub Actions | Automated plan on PR, apply on merge |
-| AI | GitHub Models API (free, `GITHUB_TOKEN`) | PR review, issue triage, changelog generation |
 | Scanning | Trivy + Checkov + OSSF Scorecard | IaC misconfig, policy enforcement, supply-chain scoring |
 | Testing | `tofu test` (mock) + Terratest (integration) | Unit + real-API coverage |
 
@@ -39,13 +38,7 @@
 │   ├── ISSUE_TEMPLATE/
 │   │   ├── bug_report.yml
 │   │   └── feature.yml
-│   ├── dependabot.yml              # Weekly dependency updates
 │   ├── copilot-instructions.md     # GitHub Copilot context
-│   ├── scripts/                    # Python automation (stdlib only — no pip)
-│   │   ├── github_models.py        # Shared Models API + GitHub REST client
-│   │   ├── ai_issue_triage.py      # Labels + triage comment on issue open
-│   │   ├── ai_pr_review.py         # Code review on IaC PRs
-│   │   └── ai_changelog.py         # Release notes on tag creation
 │   └── workflows/
 │       ├── _tofu-plan.yml          # Reusable: fmt-check → init → validate → plan → PR comment
 │       ├── _tofu-apply.yml         # Reusable: init → apply -auto-approve
@@ -57,11 +50,9 @@
 │       ├── integration-test.yml    # Terratest weekly (real GitHub API)
 │       ├── security-scan.yml       # Trivy + Checkov → GitHub Security tab
 │       ├── scorecard.yml           # OSSF Scorecard weekly
-│       ├── ai-issue-triage.yml     # AI: triage on issue open
-│       ├── ai-pr-review.yml        # AI: code review on IaC PR
-│       ├── ai-changelog.yml        # AI: release notes on tag
-│       ├── auto-merge.yml          # Dependabot patch/minor auto-merge
-│       ├── docs.yml                # terraform-docs enforce (PR) + auto-commit (main)
+│       ├── zizmor.yml              # zizmor + actionlint: audit of the workflows themselves
+│       ├── dependency-review.yml   # Block PRs adding vulnerable dependencies
+│       ├── docs.yml                # terraform-docs up to date (check only, no bot commit)
 │       ├── stale.yml               # Close stale issues/PRs
 │       └── release.yml             # Manual semver bump + GitHub release
 │
@@ -96,7 +87,8 @@
 PR open / update
   ├── tofu-github-plan      → fmt-check + init + validate + plan → comment on PR
   ├── tofu-test             → mock_provider unit tests (modules/**/tests/)
-  ├── ai-pr-review          → AI review on terraform/** + modules/** changes
+  ├── zizmor + actionlint   → security + syntax audit of the workflows
+  ├── dependency-review     → fail on newly added vulnerable dependencies
   └── security-scan         → Trivy + Checkov → GitHub Security tab
 
 Merge to main
@@ -108,9 +100,8 @@ Weekly (scheduled)
   ├── integration-test      → Terratest real-API tests (Sunday 02:00 UTC)
   └── stale                 → Mark/close inactive issues + PRs (Monday 08:00 UTC)
 
-Issue opened            → ai-issue-triage  (labels + comment)
-Release created         → ai-changelog     (AI-written release notes)
-Dependabot PR opened    → auto-merge       (patch/minor merged, major labelled priority:high)
+Renovate (Monday, before 9am Europe/Paris)
+                        → grouped update PRs; patch/minor/digest auto-merged once CI is green, majors wait for review
 
 Manual (workflow_dispatch)
   └── release             → semver bump → create GitHub release
@@ -135,20 +126,26 @@ Manual (workflow_dispatch)
 
 ### One-shot setup
 
+On Windows, one command builds a dedicated WSL distribution (`iac`, Debian trixie) with every tool,
+checksum-verified, through the same Ansible role that CI tests with Molecule:
+
+```powershell
+pwsh scripts/wsl/new-distro.ps1 -WithCluster   # distro + tools + k3d cluster + Flux
+```
+
 ```bash
-mise install          # Install Go 1.23 + Python 3.12 (reads .mise.toml)
-just setup            # Install OpenTofu, pre-commit hooks, Go deps
+just setup            # pre-commit hooks (incl. commit-msg), Go deps
 ```
 
 ### Common tasks
 
 ```bash
-just fmt              # Format all HCL in-place
-just validate         # Validate all stacks
-just lint             # tflint on all stacks
-just test             # mock_provider unit tests (no API calls)
-just security         # Trivy + Checkov scans
-just check            # All of the above — mirrors CI
+just check            # Every CI gate, locally: fmt, validate, tflint, tofu test, OPA,
+                      # kubeconform + Kyverno, ansible-lint, actionlint + zizmor, Trivy + Checkov
+just check-all        # check + k3d/Flux end-to-end (just up)
+just molecule         # workstation role in a Debian container
+just commits          # commit policy on the branch (no co-author trailer, Signed-off-by)
+just up / just down   # local k3d cluster reconciled by Flux / delete it
 
 just plan github      # Plan the github stack
 just plan doppler     # Plan the doppler stack
@@ -174,7 +171,7 @@ just test-integration TestMyTest    # Run a specific Terratest function
 |---|---|---|
 | Administration | Read & Write | Create + configure repositories |
 | Contents | Read & Write | Inject `.github/` files into repos |
-| Issues | Read & Write | AI triage labels + comments |
+| Issues | Read & Write | Labels + plan comments |
 | Metadata | Read | Repository metadata |
 | Pull requests | Read & Write | Plan comments, auto-merge |
 | Workflows | Read & Write | Repository Actions variables |
@@ -327,21 +324,8 @@ These run on a weekly schedule in CI (Sunday 02:00 UTC). They create temporary r
 | PR gates | `tofu validate`, `tofu test`, security scan on every PR |
 | OSSF Scorecard | Weekly scoring pushed to GitHub Security tab |
 | Branch protection | Conventional commits enforced via ruleset; no force-push to `main` |
-| Dependabot | Patch/minor auto-merged; major gets `priority:high` and blocks merge |
-
----
-
-## AI integrations
-
-All AI features use the **GitHub Models API** with the built-in `GITHUB_TOKEN` — no external API key, no cost.
-
-| Workflow | Trigger | Model | What it does |
-|---|---|---|---|
-| `ai-issue-triage` | Issue opened | `gpt-4o` | Suggests labels + posts triage comment |
-| `ai-pr-review` | PR on `terraform/**` | `gpt-4o` | Reviews diff for security, best practices, correctness |
-| `ai-changelog` | Release created | `gpt-4o-mini` | Writes structured release notes from commits |
-
-Scripts are in `.github/scripts/` and use Python stdlib only — no `pip install`, no container.
+| Renovate | Patch/minor/digest auto-merged after green CI; majors wait for review; actions pinned by digest |
+| Workflow audit | zizmor + actionlint on every PR |
 
 ---
 
@@ -353,10 +337,9 @@ Scripts are in `.github/scripts/` and use Python stdlib only — no `pip install
 | HCP Terraform over self-hosted state | Remote execution, encrypted state, free tier sufficient |
 | GitHub App over PAT | Ephemeral tokens, scoped permissions, no expiry surprises |
 | Doppler over SOPS/Vault | Free tier, native GitHub Actions sync, zero infra to manage |
-| GitHub Models over OpenAI | Free with `GITHUB_TOKEN`, no external key, sufficient quality |
 | `justfile` over Makefile | POSIX-safe, better syntax, self-documenting (`just --list`) |
 | `mise` over `asdf`/`pyenv` | Unified Go + Python version management, faster, `.mise.toml` is clean |
-| Dependabot over Renovate | Zero config, free, sufficient for 2 stacks; Renovate is a future option for better grouping |
+| Renovate over Dependabot | Grouping, auto-merge rules, custom managers (OpenTofu version, devcontainer tools, tflint plugins) — same choice as `utils` |
 
 ---
 
