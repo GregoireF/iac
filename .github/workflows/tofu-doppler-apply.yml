@@ -19,4 +19,5 @@ jobs:
     uses: ./.github/workflows/_tofu-apply.yml
     with:
       stack: terraform/doppler
-    secrets: inherit
+    secrets:
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}

@@ -1,0 +1,55 @@
+# Static analysis of the workflows themselves (pattern from GregoireF/ship-it):
+# a workflow runs with a token and secrets, so a template injection or an
+# over-broad permission is a supply-chain hole.
+# - zizmor (https://docs.zizmor.sh): security audits (injection, permissions, pinning, credentials…)
+# - actionlint (https://github.com/rhysd/actionlint): syntax, expressions, runner labels, action inputs
+name: zizmor
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Nothing by default; each job asks for what it needs.
+permissions: {}
+
+concurrency:
+  group: zizmor-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  zizmor:
+    name: zizmor
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: zizmorcore/zizmor-action@45d7276c9ca790aabd705e31ca99c6185c3e76dd # v0.8.1
+        with:
+          version: 1.32.0
+          advanced-security: false
+          annotations: true
+
+  actionlint:
+    name: actionlint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27"
+          cache: false
+      # Built from source at a fixed version, checked against sum.golang.org.
+      # shellcheck (preinstalled on the runner) also lints the run: scripts.
+      - name: actionlint
+        run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12

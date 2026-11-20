@@ -29,29 +29,44 @@ jobs:
       outcome: ${{ steps.plan.outcome }}
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - uses: opentofu/setup-opentofu@fc711fa910b93cba0f3fbecaafc9f42fd0c411cb # v2.0.0
         with:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
+      # Inputs reach the shell through env, never through template expansion
+      # (https://docs.zizmor.sh/audits/#template-injection)
       - name: Format check
-        run: tofu -chdir=${{ inputs.stack }} fmt -check -recursive
+        env:
+          STACK: ${{ inputs.stack }}
+        run: tofu -chdir="$STACK" fmt -check -recursive
 
       - name: Init
-        run: tofu -chdir=${{ inputs.stack }} init
+        env:
+          STACK: ${{ inputs.stack }}
+        run: tofu -chdir="$STACK" init
 
       - name: Validate
-        run: tofu -chdir=${{ inputs.stack }} validate
+        env:
+          STACK: ${{ inputs.stack }}
+        run: tofu -chdir="$STACK" validate
 
       - name: Plan
         id: plan
-        run: tofu -chdir=${{ inputs.stack }} plan -no-color 2>&1 | tee /tmp/plan.txt
+        env:
+          STACK: ${{ inputs.stack }}
+        run: tofu -chdir="$STACK" plan -no-color 2>&1 | tee /tmp/plan.txt
         continue-on-error: true
 
       - name: Post plan comment
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         if: github.event_name == 'pull_request'
+        env:
+          STACK: ${{ inputs.stack }}
+          OUTCOME: ${{ steps.plan.outcome }}
         with:
           script: |
             const fs  = require('fs');
@@ -60,13 +75,14 @@ jobs:
               ? '...(truncated — see full run)\n' + raw.slice(raw.length - 55000)
               : raw;
 
-            const outcome = '${{ steps.plan.outcome }}';
+            const stack   = process.env.STACK;
+            const outcome = process.env.OUTCOME;
             const icon    = outcome === 'success' ? '✅' : '❌';
-            const marker  = `<!-- tofu-plan:${{ inputs.stack }} -->`;
+            const marker  = `<!-- tofu-plan:${stack} -->`;
 
             const body = [
               marker,
-              `#### ${icon} OpenTofu Plan · \`${{ inputs.stack }}\` · \`${outcome}\``,
+              `#### ${icon} OpenTofu Plan · \`${stack}\` · \`${outcome}\``,
               '',
               '<details><summary>Show output</summary>',
               '',
