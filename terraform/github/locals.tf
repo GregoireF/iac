@@ -81,10 +81,12 @@ locals {
     }
 
     homebrew-tap = {
-      description            = "Homebrew formulae for GregoireF tools."
-      topics                 = ["homebrew", "homebrew-tap", "cli", "devtools"]
-      visibility             = "public"
-      has_issues             = false
+      description = "Homebrew formulae and Scoop manifests for GregoireF tools, verified and install-tested before they are published."
+      topics      = ["homebrew", "homebrew-tap", "scoop", "scoop-bucket", "cli", "devtools", "supply-chain"]
+      visibility  = "public"
+      # Nightly install tests open an issue when an install breaks; the issue
+      # template sends tool bugs to the tool's repository.
+      has_issues             = true
       has_wiki               = false
       has_projects           = false
       allow_merge_commit     = false
@@ -93,9 +95,19 @@ locals {
       delete_branch_on_merge = true
       archived               = false
 
+      # The ruleset of main (signed commits, no force push, no deletion, no
+      # bypass) is in tap.tf: the module has no required_signatures rule yet.
       branch_protection = {
         enabled                = false
         required_status_checks = []
+      }
+
+      # sync.yml's publish job: holds TAP_SIGNING_KEY (tap.tf); protected
+      # branches only, so a workflow run from another branch cannot sign.
+      environments = {
+        publish = {
+          deployment_branch_policy = "protected"
+        }
       }
 
       inject_standard_files = false
@@ -477,10 +489,10 @@ locals {
     }
     # GitHub profile repository — README.md is injected via terraform/github/files.tf
     GregoireF = {
-      description            = "GitHub profile."
-      topics                 = []
+      description            = "My GitHub profile. Every card is drawn by a small TypeScript generator and refreshed by GitHub Actions."
+      topics                 = ["automation", "bun", "github-actions", "profile-readme", "svg", "typescript"]
       visibility             = "public"
-      has_issues             = false
+      has_issues             = true
       has_wiki               = false
       has_projects           = false
       allow_merge_commit     = false
@@ -488,6 +500,8 @@ locals {
       allow_rebase_merge     = false
       delete_branch_on_merge = true
       archived               = false
+      # The profile's workflows merge their own pull requests.
+      allow_auto_merge = true
 
       branch_protection = {
         enabled                = false
