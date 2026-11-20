@@ -1,0 +1,7 @@
+---
+# Provision the dedicated WSL distribution (or any Debian 13 host) with every tool this repository uses.
+# Run: cd ansible && ansible-playbook playbooks/workstation.yml
+- name: Workstation for iac
+  hosts: workstation
+  roles:
+    - role: workstation

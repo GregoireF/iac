@@ -1,0 +1,31 @@
+---
+- name: Registry | existing
+  ansible.builtin.command: k3d registry list --no-headers
+  register: k3d_cluster_regs
+  changed_when: false
+
+- name: Registry | create (host side localhost:<port>) | k3d-{{ k3d_cluster_registry_name }}
+  ansible.builtin.command: k3d registry create {{ k3d_cluster_registry_name }} --port {{ k3d_cluster_registry_port }}
+  when: ('k3d-' ~ k3d_cluster_registry_name) not in k3d_cluster_regs.stdout
+  changed_when: true
+
+- name: Cluster | existing
+  ansible.builtin.command: k3d cluster list --no-headers
+  register: k3d_cluster_clusters
+  changed_when: false
+
+- name: Cluster | create {{ k3d_cluster_name }}
+  ansible.builtin.command: >-
+    k3d cluster create {{ k3d_cluster_name }}
+    --image {{ k3d_cluster_k3s_image }}
+    --agents {{ k3d_cluster_agents }}
+    --registry-use k3d-{{ k3d_cluster_registry_name }}:{{ k3d_cluster_registry_port }}
+    --port {{ k3d_cluster_http_port }}:80@loadbalancer
+    --port {{ k3d_cluster_https_port }}:443@loadbalancer
+    --wait --timeout 180s
+  when: (k3d_cluster_name ~ ' ') not in k3d_cluster_clusters.stdout
+  changed_when: true
+
+- name: Cluster | nodes Ready
+  ansible.builtin.command: kubectl --context k3d-{{ k3d_cluster_name }} wait nodes --all --for=condition=Ready --timeout=180s
+  changed_when: false
