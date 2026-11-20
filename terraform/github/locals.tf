@@ -549,7 +549,7 @@ locals {
     }
     "ai" = {
       color       = "059669"
-      description = "Related to AI / GitHub Models integration"
+      description = "Related to AI / LLM tooling"
     }
     # Status
     "needs-triage" = {

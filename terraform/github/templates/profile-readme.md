@@ -14,7 +14,7 @@ Infrastructure Engineer · Platform Engineering · IaC · AI Automation
 
 | Repo | Description |
 |---|---|
-| [**iac**](https://github.com/GregoireF/iac) | Infrastructure as Code lab — OpenTofu, GitHub automation, AI-powered workflows |
+| [**iac**](https://github.com/GregoireF/iac) | Infrastructure as Code lab — OpenTofu, Ansible, Kubernetes + Flux, policy-as-code |
 | [**utils**](https://github.com/GregoireF/utils) | Shared utilities and tooling |
 
 ---
@@ -25,5 +25,4 @@ Infrastructure Engineer · Platform Engineering · IaC · AI Automation
 
 - Everything as code — repos, branch protection, secrets, labels
 - Security by default — Trivy, Scorecard, SAST on every PR
-- AI-augmented workflows — triage, review, changelog via GitHub Models
 - Zero manual clicks after bootstrap
