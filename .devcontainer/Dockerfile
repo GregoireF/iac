@@ -2,7 +2,8 @@ FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04@sha256:d94c97dd9cacf183d0
 
 # tenv — version manager for OpenTofu & Terraform
 # Lets you switch versions via .opentofu-version file per project
-ARG TENV_VERSION=4.12.2
+# renovate: datasource=github-releases depName=tofuutils/tenv
+ARG TENV_VERSION=4.16.9
 RUN ARCH=$(dpkg --print-architecture) \
     && curl -fsSL \
        "https://github.com/tofuutils/tenv/releases/download/v${TENV_VERSION}/tenv_v${TENV_VERSION}_${ARCH}.deb" \
@@ -11,7 +12,8 @@ RUN ARCH=$(dpkg --print-architecture) \
     && rm /tmp/tenv.deb
 
 # terraform-docs — auto-generate module documentation
-ARG TFDOCS_VERSION=0.24.0
+# renovate: datasource=github-releases depName=terraform-docs/terraform-docs
+ARG TFDOCS_VERSION=0.25.1
 RUN ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') \
     && curl -fsSL \
        "https://github.com/terraform-docs/terraform-docs/releases/download/v${TFDOCS_VERSION}/terraform-docs-v${TFDOCS_VERSION}-linux-${ARCH}.tar.gz" \
@@ -21,7 +23,8 @@ RUN ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') \
     && rm /tmp/tfdocs.tar.gz
 
 # tflint — Terraform/OpenTofu linter (versioned binary, not curl|bash)
-ARG TFLINT_VERSION=0.62.1
+# renovate: datasource=github-releases depName=terraform-linters/tflint
+ARG TFLINT_VERSION=0.66.0
 RUN ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') \
     && curl -fsSL \
        "https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}/tflint_linux_${ARCH}.zip" \
@@ -31,7 +34,8 @@ RUN ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') \
     && rm /tmp/tflint.zip
 
 # trivy — IaC security scanner (used by pre-commit + security-scan workflow)
-ARG TRIVY_VERSION=0.70.0
+# renovate: datasource=github-releases depName=aquasecurity/trivy
+ARG TRIVY_VERSION=0.76.2
 RUN ARCH=$(uname -m | sed 's/x86_64/64bit/;s/aarch64/ARM64/') \
     && curl -fsSL \
        "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-${ARCH}.tar.gz" \
@@ -41,10 +45,11 @@ RUN ARCH=$(uname -m | sed 's/x86_64/64bit/;s/aarch64/ARM64/') \
     && rm /tmp/trivy.tar.gz
 
 # pre-commit + Checkov — literal versions (not ARG vars) for OSSF Scorecard compliance
-RUN pip3 install --no-cache-dir "pre-commit==4.6.0" "checkov==3.2.529"
+RUN pip3 install --no-cache-dir "pre-commit==4.7.0" "checkov==3.4.5"
 
 # Go — needed for Terratest integration tests
-ARG GO_VERSION=1.26.3
+# renovate: datasource=golang-version depName=go
+ARG GO_VERSION=1.27.4
 RUN ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') \
     && curl -fsSL \
        "https://go.dev/dl/go${GO_VERSION}.linux-${ARCH}.tar.gz" \
