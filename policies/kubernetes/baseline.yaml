@@ -1,0 +1,59 @@
+# Kyverno CEL policies (Kyverno 1.20 removed the legacy kyverno.io ClusterPolicy:
+# https://kyverno.io/docs/guides/migration-to-cel/). Applied in CI with `kyverno apply` on the rendered
+# manifests; the same files can later run in-cluster. ValidatingPolicy reference:
+# https://kyverno.io/docs/policy-types/validating-policy/
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: iac-helmrelease-remediation
+spec:
+  validationActions: [Deny]
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["helm.toolkit.fluxcd.io"]
+        apiVersions: ["v2"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["helmreleases"]
+  validations:
+    - expression: >-
+        has(object.spec.install) && has(object.spec.install.remediation) &&
+        has(object.spec.install.remediation.retries) && object.spec.install.remediation.retries > 0 &&
+        has(object.spec.upgrade) && has(object.spec.upgrade.remediation) &&
+        has(object.spec.upgrade.remediation.retries) && object.spec.upgrade.remediation.retries > 0
+      message: "HelmRelease must set install.remediation.retries and upgrade.remediation.retries (> 0)."
+---
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: iac-oci-source-pinned
+spec:
+  validationActions: [Deny]
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["source.toolkit.fluxcd.io"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["ocirepositories"]
+  validations:
+    - expression: >-
+        has(object.spec.ref) &&
+        (has(object.spec.ref.tag) || has(object.spec.ref.semver) || has(object.spec.ref.digest))
+      message: "OCIRepository must pin ref.tag, ref.semver or ref.digest (no implicit 'latest')."
+---
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: iac-namespace-pod-security
+spec:
+  validationActions: [Deny]
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["namespaces"]
+  validations:
+    - expression: >-
+        has(object.metadata.labels) &&
+        'pod-security.kubernetes.io/enforce' in object.metadata.labels
+      message: "Every namespace declares a Pod Security Standard (label pod-security.kubernetes.io/enforce)."
