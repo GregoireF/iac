@@ -1,0 +1,14 @@
+# The kubernetes/ tree, pushed as an OCI artifact to the k3d-managed registry
+# (https://fluxcd.io/flux/cheatsheets/oci-artifacts/, https://k3d.io).
+# Inside the cluster the registry is reached as k3d-iac-registry:5000 over plain HTTP.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: iac
+  namespace: flux-system
+spec:
+  interval: 1m
+  url: oci://k3d-iac-registry:5000/iac/kubernetes
+  ref:
+    tag: local
+  insecure: true

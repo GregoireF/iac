@@ -1,0 +1,16 @@
+# Cluster add-ons first, then applications (apps.yaml depends on this).
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infrastructure
+  namespace: flux-system
+spec:
+  interval: 10m
+  retryInterval: 1m
+  timeout: 5m
+  sourceRef:
+    kind: OCIRepository
+    name: iac
+  path: ./infrastructure/local
+  prune: true
+  wait: true
