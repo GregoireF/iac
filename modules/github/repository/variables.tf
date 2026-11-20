@@ -36,8 +36,8 @@ variable "config" {
     allow_auto_merge = optional(bool, false)
 
     branch_protection = object({
-      enabled                      = bool
-      required_status_checks       = list(string)
+      enabled                = bool
+      required_status_checks = list(string)
       # Require a pull request's branch to be up to date with the default
       # branch before it merges. false lets a green pull request merge at once
       # (auto-merge), the CI on the default branch catching what two pull
