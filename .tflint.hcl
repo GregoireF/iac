@@ -3,11 +3,14 @@ config {
   call_module_type = "local"
 }
 
-# GitHub provider rules
-plugin "github" {
+# Core OpenTofu/Terraform language rules (the rules below belong to this ruleset).
+# The former "github" plugin pointed to github.com/integrations/tflint-ruleset-github,
+# which does not exist, so `tflint --init` failed.
+plugin "terraform" {
   enabled = true
-  version = "0.26.0"
-  source  = "github.com/integrations/tflint-ruleset-github"
+  preset  = "recommended"
+  version = "0.17.0"
+  source  = "github.com/terraform-linters/tflint-ruleset-terraform"
 }
 
 # Core OpenTofu/Terraform rules
