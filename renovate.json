@@ -1,0 +1,116 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "timezone": "Europe/Paris",
+  "schedule": ["before 9am on monday"],
+  "prHourlyLimit": 3,
+  "prConcurrentLimit": 5,
+  "labels": ["dependencies"],
+  "pre-commit": { "enabled": true },
+  "customManagers": [
+    {
+      "description": "Devcontainer tool versions annotated with '# renovate:' comments",
+      "customType": "regex",
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+ARG \\w+=(?<currentValue>\\S+)"
+      ],
+      "extractVersionTemplate": "^v?(?<version>.*)$"
+    },
+    {
+      "description": "pip pins installed in the devcontainer",
+      "customType": "regex",
+      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
+      "matchStrings": ["\"(?<depName>pre-commit|checkov)==(?<currentValue>[^\"]+)\""],
+      "datasourceTemplate": "pypi"
+    },
+    {
+      "description": "OpenTofu version used by tenv and CI",
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.opentofu-version$/"],
+      "matchStrings": ["^(?<currentValue>\\S+)"],
+      "depNameTemplate": "opentofu/opentofu",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "description": "tflint plugins",
+      "customType": "regex",
+      "managerFilePatterns": ["/(^|/)\\.tflint\\.hcl$/"],
+      "matchStrings": [
+        "version\\s*=\\s*\"(?<currentValue>[^\"]+)\"\\s+source\\s*=\\s*\"github\\.com/(?<depName>[^\"]+)\""
+      ],
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "description": "'# renovate:' annotations (non-docker) in Ansible, Kubernetes, workflows and the WSL bootstrap: comment above the value, or after it on the same line",
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^(ansible|kubernetes|\\.github/workflows)/.+\\.ya?ml$/",
+        "/^scripts/wsl/.+\\.ps1$/"
+      ],
+      "matchStrings": [
+        "(?:^|\\n)[ \\t]*# renovate: datasource=(?<datasource>(?!docker)\\S+) depName=(?<depName>\\S+)\\r?\\n\\s*- name: \\S+\\r?\\n\\s*version: \"(?<currentValue>[^\"]+)\"",
+        "(?:^|\\n)[ \\t]*# renovate: datasource=(?<datasource>(?!docker)\\S+) depName=(?<depName>\\S+)\\r?\\n\\s*[\\w-]+: \"?(?<currentValue>[^\"@\\s:]+)\"?\\r?\\n",
+        "(?:^|\\n)[ \\t]*# renovate: datasource=(?<datasource>(?!docker)\\S+) depName=(?<depName>\\S+)\\r?\\n\\s*\\[string\\]\\$\\w+ = '(?<currentValue>[^'@]+)'",
+        "[\\w-]+: \"(?<currentValue>[^\"]+)\" # renovate: datasource=(?<datasource>(?!docker)\\S+) depName=(?<depName>\\S+)"
+      ],
+      "extractVersionTemplate": "^v?(?<version>.*)$"
+    },
+    {
+      "description": "'# renovate: datasource=docker' annotations on image:tag@digest values (tag and digest move together)",
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^ansible/.+\\.ya?ml$/",
+        "/^scripts/wsl/.+\\.ps1$/"
+      ],
+      "matchStrings": [
+        "(?:^|\\n)[ \\t]*# renovate: datasource=docker depName=(?<depName>\\S+)\\r?\\n\\s*[\\w-]+: \"[^\"]*:(?<currentValue>[^@\"]+)@(?<currentDigest>sha256:[a-f0-9]{64})\"",
+        "(?:^|\\n)[ \\t]*# renovate: datasource=docker depName=(?<depName>\\S+)\\r?\\n\\s*\\[string\\]\\$\\w+ = '[^']*:(?<currentValue>[^@']+)@(?<currentDigest>sha256:[a-f0-9]{64})'"
+      ],
+      "datasourceTemplate": "docker"
+    },
+    {
+      "description": "Exact PyPI pins (uv tools, --with packages) in Ansible and workflows, quoted as \"name==x.y.z\" or \"name[extra]==x.y.z\"",
+      "customType": "regex",
+      "managerFilePatterns": ["/^(ansible|\\.github/workflows)/.+\\.ya?ml$/"],
+      "matchStrings": [
+        "[\"'](?<depName>[A-Za-z0-9][A-Za-z0-9._-]*)(?:\\[[^\\]]+\\])?==(?<currentValue>[0-9][^\"'\\s]*)[\"']"
+      ],
+      "datasourceTemplate": "pypi"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Solo maintainer, low friction: ONE weekly PR with every non-major update, merged on its own once CI is green",
+      "matchUpdateTypes": ["minor", "patch", "digest", "pin", "pinDigest"],
+      "groupName": "all non-major dependencies",
+      "groupSlug": "all-minor-patch",
+      "automerge": true,
+      "platformAutomerge": true
+    },
+    {
+      "description": "Tools whose sha256 is pinned in the workstation role (no usable vendor checksum file): separate PR, hash updated by hand",
+      "matchDepNames": ["k3d-io/k3d", "FiloSottile/age"],
+      "groupName": "pinned-hash tools",
+      "groupSlug": "pinned-hash-tools",
+      "automerge": false,
+      "addLabels": ["manual-hash"],
+      "prBodyNotes": [
+        "Update the pinned `sha256:` of this tool in `ansible/roles/workstation/defaults/main.yml` from the official release, then `just molecule`."
+      ]
+    },
+    {
+      "description": "Majors always wait for a human",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "addLabels": ["major"]
+    }
+  ]
+}
