@@ -22,14 +22,20 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - uses: opentofu/setup-opentofu@fc711fa910b93cba0f3fbecaafc9f42fd0c411cb # v2.0.0
         with:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: Init
-        run: tofu -chdir=${{ inputs.stack }} init
+        env:
+          STACK: ${{ inputs.stack }}
+        run: tofu -chdir="$STACK" init
 
       - name: Apply
-        run: tofu -chdir=${{ inputs.stack }} apply -auto-approve -no-color
+        env:
+          STACK: ${{ inputs.stack }}
+        run: tofu -chdir="$STACK" apply -auto-approve -no-color
