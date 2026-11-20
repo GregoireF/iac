@@ -1,0 +1,43 @@
+---
+- name: Flux | pre-flight checks
+  ansible.builtin.command: flux check --pre --context {{ flux_bootstrap_context }}
+  changed_when: false
+
+- name: Flux | install controllers (idempotent)
+  ansible.builtin.command: flux install --context {{ flux_bootstrap_context }}
+  register: flux_bootstrap_install
+  changed_when: "'configured' in flux_bootstrap_install.stdout or 'created' in flux_bootstrap_install.stdout"
+
+- name: Flux | push kubernetes/ as an OCI artifact
+  ansible.builtin.shell: |
+    set -eu
+    cd "{{ flux_bootstrap_repo_root }}"
+    # Git metadata is informational only; a Windows-created worktree is unreadable from WSL, so fall back.
+    src="$(git config --get remote.origin.url 2>/dev/null || echo local)"
+    branch="$(git branch --show-current 2>/dev/null || true)"
+    sha="$(git rev-parse HEAD 2>/dev/null || true)"
+    if [ -n "$sha" ]; then rev="${branch:-detached}@sha1:${sha}"; else rev="local@sha1:$(date -u +%s)"; fi
+    flux push artifact "oci://{{ flux_bootstrap_artifact_host }}/{{ flux_bootstrap_artifact }}:{{ flux_bootstrap_tag }}" \
+      --path=./kubernetes \
+      --source="$src" \
+      --revision="$rev" \
+      --insecure-registry
+  args:
+    executable: /bin/bash
+  changed_when: true
+
+- name: Flux | cluster entry point (clusters/local)
+  ansible.builtin.command: >-
+    kubectl --context {{ flux_bootstrap_context }} apply -k {{ flux_bootstrap_repo_root }}/kubernetes/clusters/local
+  register: flux_bootstrap_apply
+  changed_when: "'configured' in flux_bootstrap_apply.stdout or 'created' in flux_bootstrap_apply.stdout"
+
+- name: Flux | reconcile source
+  ansible.builtin.command: flux reconcile source oci iac --context {{ flux_bootstrap_context }}
+  changed_when: false
+
+- name: Flux | wait until every Kustomization is Ready
+  ansible.builtin.command: >-
+    kubectl --context {{ flux_bootstrap_context }} -n flux-system wait kustomizations.kustomize.toolkit.fluxcd.io
+    --all --for=condition=Ready --timeout=10m
+  changed_when: false

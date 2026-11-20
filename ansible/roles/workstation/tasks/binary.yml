@@ -1,0 +1,66 @@
+---
+# One release binary. A stamp file per name+version keeps the role idempotent and makes
+# version bumps (Renovate) reinstall only what changed.
+- name: "Stamp | {{ tool.name }}"
+  ansible.builtin.stat:
+    path: "/usr/local/lib/iac-tools/{{ tool.name }}-{{ tool.version }}"
+  register: workstation_stamp
+
+- name: "Install | {{ tool.name ~ ' ' ~ tool.version }}"
+  when: not workstation_stamp.stat.exists
+  become: true
+  block:
+    - name: "Work and stamp dirs | {{ tool.name }}"
+      ansible.builtin.file:
+        path: "{{ dir }}"
+        state: directory
+        mode: "0755"
+      loop: ["/tmp/iac-tools/{{ tool.name }}", /usr/local/lib/iac-tools]
+      loop_control:
+        loop_var: dir
+
+    - name: "Download and verify | {{ tool.name }}"
+      ansible.builtin.get_url:
+        url: "{{ tool.url | replace('@V@', tool.version) }}"
+        checksum: "{{ tool.checksum | replace('@V@', tool.version) }}"
+        dest: "/tmp/iac-tools/{{ tool.name }}/{{ (tool.url | replace('@V@', tool.version)) | basename }}"
+        mode: "0644"
+      register: workstation_download
+
+    - name: "Extract | {{ tool.name }}"
+      when: tool.archive | default(false)
+      ansible.builtin.unarchive:
+        src: "{{ workstation_download.dest }}"
+        dest: "/tmp/iac-tools/{{ tool.name }}"
+        remote_src: true
+
+    - name: "Install binary | {{ tool.name }}"
+      vars:
+        workstation_extracted: "/tmp/iac-tools/{{ tool.name }}/{{ tool.archive_path | default(tool.name) }}"
+      ansible.builtin.copy:
+        src: "{{ workstation_extracted if (tool.archive | default(false)) else workstation_download.dest }}"
+        dest: "{{ workstation_bin_dir }}/{{ tool.name }}"
+        mode: "0755"
+        remote_src: true
+
+    - name: "Extra binaries from the archive | {{ tool.name }}"
+      ansible.builtin.copy:
+        src: "/tmp/iac-tools/{{ tool.name }}/{{ extra }}"
+        dest: "{{ workstation_bin_dir }}/{{ extra | basename }}"
+        mode: "0755"
+        remote_src: true
+      loop: "{{ tool.extra_from_archive | default([]) }}"
+      loop_control:
+        loop_var: extra
+
+    - name: "Stamp | {{ tool.name }}"
+      ansible.builtin.copy:
+        content: "{{ tool.url | replace('@V@', tool.version) }}\n"
+        dest: "/usr/local/lib/iac-tools/{{ tool.name }}-{{ tool.version }}"
+        mode: "0644"
+
+  always:
+    - name: "Clean work dir | {{ tool.name }}"
+      ansible.builtin.file:
+        path: "/tmp/iac-tools/{{ tool.name }}"
+        state: absent

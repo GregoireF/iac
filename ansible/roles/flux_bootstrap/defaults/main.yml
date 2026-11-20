@@ -1,0 +1,9 @@
+---
+flux_bootstrap_context: "k3d-{{ k3d_cluster_name | default('iac') }}"
+# Repository root seen from the WSL distribution (the playbook runs from <repo>/ansible)
+flux_bootstrap_repo_root: "{{ playbook_dir }}/../.."
+# The kubernetes/ tree is pushed as an OCI artifact to the k3d registry, so Flux can reconcile
+# uncommitted changes (https://fluxcd.io/flux/cheatsheets/oci-artifacts/).
+flux_bootstrap_artifact_host: "localhost:{{ k3d_cluster_registry_port | default(5001) }}"
+flux_bootstrap_artifact: "iac/kubernetes"
+flux_bootstrap_tag: local
