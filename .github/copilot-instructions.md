@@ -10,7 +10,6 @@ This repository is an Infrastructure as Code (IaC) engineering lab managed with 
 - **State backend**: HCP Terraform (remote execution mode, org `gregoiref`)
 - **Auth**: GitHub App (ephemeral tokens via `app_auth {}` block)
 - **CI/CD**: GitHub Actions
-- **AI workflows**: GitHub Models API (`GITHUB_TOKEN`, no external key)
 - **Secrets management**: Doppler — CI service tokens synced to GitHub Actions secrets (`DOPPLER_TOKEN`)
 
 ---
@@ -45,7 +44,7 @@ modules/<provider>/<name>/  ← reusable modules
 
 - Never commit secrets, tokens, PEM keys, or `.tfvars` files
 - Sensitive values live in HCP Terraform workspace variables only
-- `vulnerability_alerts = true` on every `github_repository` resource
+- Dependabot vulnerability alerts on every active repository via `github_repository_vulnerability_alerts` (the `vulnerability_alerts` argument is deprecated since provider 6.13)
 - Validate `visibility` before applying (public repos are public)
 
 ## Naming conventions
@@ -60,8 +59,6 @@ modules/<provider>/<name>/  ← reusable modules
 - Standard library only — no `pip install`, no `requirements.txt`
 - Use `urllib.request` for HTTP, `json` for parsing
 - Use environment variables for all external config (never hardcode)
-- GitHub Models API: POST to `https://models.inference.ai.azure.com/chat/completions` with `GITHUB_TOKEN`
-- Default model: `gpt-4o-mini` for speed/cost, `gpt-4o` for complex reasoning
 
 ## GitHub Actions
 

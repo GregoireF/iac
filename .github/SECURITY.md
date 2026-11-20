@@ -33,7 +33,7 @@ Alternatively, email: gfavreau.wrprojects@gmail.com
 | Secrets storage | HCP Terraform workspace variables (encrypted at rest) |
 | Secret detection | `detect-private-key` pre-commit hook + Trivy |
 | IaC scanning | Trivy + Checkov on every PR (SARIF → GitHub Security tab) |
-| Dependency updates | Dependabot weekly — patch/minor auto-merged, major labelled `priority:high` |
+| Dependency updates | Renovate weekly — patch/minor/digest auto-merged after green CI, majors reviewed |
 | Branch protection | Conventional commits ruleset + required status checks |
 | OSSF Scorecard | Weekly scoring — results in GitHub Security tab |
 | Least privilege | GitHub Actions permissions declared per-workflow |
