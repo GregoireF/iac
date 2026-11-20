@@ -489,10 +489,10 @@ locals {
     }
     # GitHub profile repository — README.md is injected via terraform/github/files.tf
     GregoireF = {
-      description            = "GitHub profile."
-      topics                 = []
+      description            = "My GitHub profile. Every card is drawn by a small TypeScript generator and refreshed by GitHub Actions."
+      topics                 = ["automation", "bun", "github-actions", "profile-readme", "svg", "typescript"]
       visibility             = "public"
-      has_issues             = false
+      has_issues             = true
       has_wiki               = false
       has_projects           = false
       allow_merge_commit     = false
@@ -500,6 +500,8 @@ locals {
       allow_rebase_merge     = false
       delete_branch_on_merge = true
       archived               = false
+      # The profile's workflows merge their own pull requests.
+      allow_auto_merge = true
 
       branch_protection = {
         enabled                = false
