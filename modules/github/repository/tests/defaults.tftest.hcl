@@ -53,8 +53,8 @@ run "vulnerability_alerts_always_enabled" {
   command = plan
 
   assert {
-    condition     = github_repository.this.vulnerability_alerts == true
-    error_message = "vulnerability_alerts must always be true — non-negotiable security baseline"
+    condition     = length(github_repository_vulnerability_alerts.this) == 1 && github_repository_vulnerability_alerts.this[0].enabled == true
+    error_message = "vulnerability alerts must always be enabled on active repositories — non-negotiable security baseline"
   }
 }
 
@@ -298,9 +298,9 @@ run "require_pr_reviews_adds_pull_request_rule" {
       allow_auto_merge       = false
 
       branch_protection = {
-        enabled            = true
+        enabled                = true
         required_status_checks = []
-        require_pr_reviews = true
+        require_pr_reviews     = true
       }
 
       environments = {}

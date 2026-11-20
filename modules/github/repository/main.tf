@@ -18,13 +18,22 @@ resource "github_repository" "this" {
 
   topics = var.config.topics
 
-  archived             = var.config.archived
-  vulnerability_alerts = true
+  archived = var.config.archived
 
   lifecycle {
     prevent_destroy = true
     ignore_changes  = [auto_init]
   }
+}
+
+# Dependabot vulnerability alerts. The `vulnerability_alerts` argument of github_repository is
+# deprecated in provider 6.13; this dedicated resource replaces it (added in 6.12.0, PR #3166).
+# Archived repositories are read-only on GitHub, so the setting only applies to active ones.
+resource "github_repository_vulnerability_alerts" "this" {
+  count = var.config.archived ? 0 : 1
+
+  repository = github_repository.this.name
+  enabled    = true
 }
 
 # Ruleset-based branch protection.
@@ -204,11 +213,11 @@ locals {
   env_variables = merge([
     for env_name, env_cfg in var.config.environments : {
       for var_name, var_value in env_cfg.variables :
-        "${env_name}:${var_name}" => {
-          environment   = env_name
-          variable_name = var_name
-          value         = var_value
-        }
+      "${env_name}:${var_name}" => {
+        environment   = env_name
+        variable_name = var_name
+        value         = var_value
+      }
     }
   ]...)
 }
@@ -244,10 +253,6 @@ resource "github_repository_file" "codeowners" {
   content             = "* @${var.owner}\n"
   commit_message      = "chore: add CODEOWNERS [skip ci]"
   overwrite_on_create = true
-
-  lifecycle {
-    ignore_changes = [commit_sha]
-  }
 }
 
 resource "github_repository_file" "pr_template" {
@@ -259,8 +264,4 @@ resource "github_repository_file" "pr_template" {
   content             = file("${path.module}/templates/pull_request_template.md")
   commit_message      = "chore: add PR template [skip ci]"
   overwrite_on_create = true
-
-  lifecycle {
-    ignore_changes = [commit_sha]
-  }
 }
