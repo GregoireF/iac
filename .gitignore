@@ -28,8 +28,6 @@ Thumbs.db
 .vscode/
 *.swp
 
-# Claude Code session files
-.claude/
 
 # Python
 __pycache__/
@@ -39,3 +37,8 @@ __pycache__/
 # Go build artifacts
 *.test
 *.out
+
+# Rendered manifests (scripts/check-manifests.sh, just k8s)
+rendered/
+# Lock files belong to root stacks only, not to reusable modules
+modules/**/.terraform.lock.hcl
