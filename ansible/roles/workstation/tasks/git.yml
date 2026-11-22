@@ -1,0 +1,72 @@
+---
+# Git inside the distribution signs commits with its own SSH key (one key per machine, same identity):
+# register the public key once on GitHub as a *signing* key and the commits show as Verified.
+- name: Git | signing key directory
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.ssh"
+    state: directory
+    mode: "0700"
+
+- name: Git | signing key (created once)
+  ansible.builtin.command: >-
+    ssh-keygen -q -t ed25519 -N ''
+    -C "{{ workstation_git_email | default('iac', true) }} (iac distro signing)"
+    -f {{ workstation_git_signing_key }}
+  args:
+    creates: "{{ workstation_git_signing_key }}"
+  notify: Show the distribution signing key
+
+- name: Git | read the public key
+  ansible.builtin.slurp:
+    src: "{{ workstation_git_signing_key }}.pub"
+  register: workstation_git_pub
+
+- name: Git | identity (only when provided, e.g. by new-distro.ps1)
+  ansible.builtin.shell: |
+    set -eu
+    if [ "$(git config --global --get "$KEY" || true)" = "$VALUE" ]; then echo unchanged; else git config --global "$KEY" "$VALUE"; echo changed; fi
+  args:
+    chdir: "{{ ansible_env.HOME }}" # outside any repository (a worktree's .git can be unreadable from WSL)
+  environment:
+    KEY: "{{ item.key }}"
+    VALUE: "{{ item.value }}"
+  register: workstation_git_config
+  changed_when: workstation_git_config.stdout == 'changed'
+  loop: >-
+    {{ ([{'key': 'user.name', 'value': workstation_git_name}] if workstation_git_name else [])
+       + ([{'key': 'user.email', 'value': workstation_git_email}] if workstation_git_email else []) }}
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: Git | config directory
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.config/git"
+    state: directory
+    mode: "0755"
+
+- name: Git | allowed signers (local `git log --show-signature`)
+  ansible.builtin.copy:
+    dest: "{{ ansible_env.HOME }}/.config/git/allowed_signers"
+    content: "{{ workstation_git_email | default('*', true) }} {{ (workstation_git_pub.content | b64decode).split()[:2] | join(' ') }}\n"
+    mode: "0644"
+
+- name: Git | sign every commit and tag with the SSH key
+  ansible.builtin.shell: |
+    set -eu
+    if [ "$(git config --global --get "$KEY" || true)" = "$VALUE" ]; then echo unchanged; else git config --global "$KEY" "$VALUE"; echo changed; fi
+  args:
+    chdir: "{{ ansible_env.HOME }}" # outside any repository (a worktree's .git can be unreadable from WSL)
+  environment:
+    KEY: "{{ item.key }}"
+    VALUE: "{{ item.value }}"
+  register: workstation_git_config
+  changed_when: workstation_git_config.stdout == 'changed'
+  loop:
+    - { key: gpg.format, value: ssh }
+    - { key: user.signingkey, value: "{{ workstation_git_signing_key }}.pub" }
+    - { key: gpg.ssh.allowedSignersFile, value: "{{ ansible_env.HOME }}/.config/git/allowed_signers" }
+    - { key: commit.gpgsign, value: "true" }
+    - { key: tag.gpgsign, value: "true" }
+    - { key: init.defaultBranch, value: main }
+  loop_control:
+    label: "{{ item.key }}"

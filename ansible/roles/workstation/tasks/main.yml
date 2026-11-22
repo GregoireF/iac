@@ -23,6 +23,9 @@
 - name: Go toolchain
   ansible.builtin.import_tasks: go.yml
 
+- name: Git identity and commit signing
+  ansible.builtin.import_tasks: git.yml
+
 - name: Python CLIs as uv tools
   ansible.builtin.import_tasks: uv_tools.yml
   when: workstation_uv_tools | length > 0
