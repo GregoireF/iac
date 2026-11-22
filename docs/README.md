@@ -19,6 +19,7 @@ quadrantChart
 
 ## How-to guides — reach a goal
 
+- [Use the self-service forms and commands](how-to/self-service.md)
 - [Add a GitHub repository](how-to/add-a-repository.md)
 - [Release the `github/repository` module](how-to/release-the-module.md)
 - [Change Kubernetes manifests](how-to/change-kubernetes-manifests.md)
