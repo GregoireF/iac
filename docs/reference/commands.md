@@ -1,6 +1,6 @@
 # Commands
 
-Every task is a [`just`](https://just.systems) recipe; `just` alone lists them with their description.
+Every task is a [`just`](https://just.systems) recipe. `just` alone opens a searchable menu (fzf) with a preview of each recipe; outside a terminal it lists them.
 Run them inside the `iac` WSL distribution, at the repository root.
 
 ```mermaid
@@ -29,6 +29,12 @@ flowchart LR
 | `just docs-lint [--offline]` | `scripts/check-docs.sh`: markdownlint, typos, lychee, Mermaid rendering | `docs-quality.yml` |
 | `just docs` / `just docs-check` | Inject terraform-docs into module READMEs / fail if they are stale | `docs.yml` |
 | `just commits [base]` | Commit policy on every commit since `base` (default `origin/main`) | `commit-policy.yml` |
+
+## Self-service
+
+| Recipe | Effect |
+|---|---|
+| `just request <issue>` | Turns a validated request issue (`request:ready`) into a signed commit and a pull request ([guide](../how-to/self-service.md)) |
 
 ## Environment
 

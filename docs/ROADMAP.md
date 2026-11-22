@@ -16,9 +16,9 @@ timeline
     3 Ansible : WSL distro, workstation role, Molecule
     4 Kubernetes and Flux : k3d, OCI artifact, k8s-e2e
     Docs : Diátaxis, Mermaid, docs quality gates
+    5 Self-service : request forms, run labels, just menu
   section Next
     2 State migration : encrypted state in the repo, no HCP
-    5 Self-service : issue forms, labels, PR commands, just menu
     6 Secrets and supply chain : SOPS and age, attestations, cosign
   section Later
     7 Observability : LGTM and OpenTelemetry
@@ -142,7 +142,7 @@ docs/                 ROADMAP, ARCHITECTURE, ADRs
 2. **State migration** (D2, D10): encrypted local backend, `tfstate` branch, plan/apply workflows rewritten, `tfe` removed, modules by relative path. Needs a passphrase secret (`TF_ENCRYPTION_PASSPHRASE`, kept SOPS-encrypted in the repo too).
 3. **Ansible** — done: WSL distro bootstrap (`scripts/wsl/new-distro.ps1`), `workstation` role (checksum-verified downloads, idempotent), Molecule in CI.
 4. **Kubernetes + Flux** — done: `k3d_cluster` + `flux_bootstrap` roles, `kubernetes/` tree, `k8s-e2e.yml`. Verified locally: every Kustomization Ready, podinfo running under the `restricted` Pod Security Standard.
-5. **Self-service** (D14): issue forms + labels, owner-only PR commands, interactive `just` menu.
+5. **Self-service** (D14) — built: four request forms validated by `requests.yml` and turned into signed pull requests by `just request <n>`; `run:plan`, `run:e2e`, `run:check` labels (labels instead of `/commands`: zizmor flags `issue_comment`); `just` opens an fzf menu; the WSL distribution signs with its own key ([guide](how-to/self-service.md)).
 6. **Secrets & supply chain** (D8, D16): SOPS + age (OpenTofu, Flux), GitHub OIDC in CI, attestations, cosign + Flux verification, SBOM, Scorecard ≥ 9; Doppler stack retired.
 7. **Observability** (D13): LGTM + OTel Collector, lite profile for the PC; then Gatus (status), Garage (S3), cert-manager; Longhorn only on real nodes (needs `open-iscsi` on the host, unavailable in k3d).
 8. **Talos + Cilium** (D11, D12): machine config as code, Talos-in-Docker cluster in CI with the same Flux tree.

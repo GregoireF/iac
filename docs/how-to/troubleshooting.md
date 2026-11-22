@@ -9,6 +9,7 @@ Every entry below happened while building this platform; the symptom is quoted a
 | k3s or kind nodes never become Ready; cgroup errors in the node logs | WSL still on cgroup v1 (old WSL) | `wsl --update`, then `wsl --shutdown`; `stat -fc %T /sys/fs/cgroup` must print `cgroup2fs` |
 | `the role 'workstation' was not found` | Ansible ignores `ansible.cfg` in a world-writable directory such as `/mnt/d` | Run through `just` (it sets `ANSIBLE_CONFIG=ansible.cfg`) or export it yourself |
 | `fatal: not a git repository` inside WSL, on a worktree created from Windows | The worktree's `.git` file holds a Windows path | Run git from Windows for that worktree; scripts here avoid git (they use `find`) |
+| `git config --global` fails with `not a git repository` from a playbook | Git still inspects the current directory, here a worktree it cannot read | The role runs git from `$HOME` |
 | A tool is missing after a Renovate bump | The stamp for the new version does not exist yet | `just workstation` (idempotent, reinstalls only what changed) |
 
 ## Molecule

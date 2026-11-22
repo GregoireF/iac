@@ -51,7 +51,7 @@ pwsh scripts/wsl/new-distro.ps1 -WithCluster
 
 ```bash
 # inside the distribution, at the repository root
-just            # list every command, one line of explanation each
+just            # searchable menu of every command (fzf), with a preview
 just check      # every CI gate, locally
 just up         # (re)create the cluster and reconcile kubernetes/ through Flux
 ```
@@ -65,7 +65,7 @@ The docs follow [Diátaxis](https://diataxis.fr): learn, do, look up, understand
 | | |
 |---|---|
 | **Tutorial** | [Getting started](docs/tutorials/getting-started.md) — from a Windows PC to a green `just check` and a running cluster |
-| **How-to guides** | [Add a repository](docs/how-to/add-a-repository.md) · [Release the module](docs/how-to/release-the-module.md) · [Change Kubernetes manifests](docs/how-to/change-kubernetes-manifests.md) · [Handle dependency updates](docs/how-to/update-dependencies.md) · [Add a provider stack](docs/how-to/add-a-provider-stack.md) · [Troubleshooting](docs/how-to/troubleshooting.md) |
+| **How-to guides** | [Self-service forms and commands](docs/how-to/self-service.md) · [Add a repository](docs/how-to/add-a-repository.md) · [Release the module](docs/how-to/release-the-module.md) · [Change Kubernetes manifests](docs/how-to/change-kubernetes-manifests.md) · [Handle dependency updates](docs/how-to/update-dependencies.md) · [Add a provider stack](docs/how-to/add-a-provider-stack.md) · [Troubleshooting](docs/how-to/troubleshooting.md) |
 | **Reference** | [Commands](docs/reference/commands.md) · [Workflows](docs/reference/workflows.md) · [Toolchain](docs/reference/toolchain.md) · [Policies](docs/reference/policies.md) · [Repository layout](docs/reference/layout.md) · [Module `github/repository`](modules/github/repository/README.md) |
 | **Explanation** | [Architecture](docs/explanation/architecture.md) · [Delivery pipeline](docs/explanation/pipeline.md) · [GitOps loop](docs/explanation/gitops.md) · [Security model](docs/explanation/security-model.md) · [Roadmap & decisions](docs/ROADMAP.md) · [ADRs](docs/adr/) |
 
