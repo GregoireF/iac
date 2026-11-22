@@ -1,0 +1,48 @@
+name: "Request: new repository"
+description: Add a GitHub repository managed by terraform/github (self-service)
+title: "[request] new repository: "
+labels: ["request:repository"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The form is validated automatically and the exact change is posted below.
+        The owner then runs `just request <issue number>`, which opens a signed pull request with the plan.
+  - type: input
+    id: name
+    attributes:
+      label: Repository name
+      description: Letters, digits, '.', '_' or '-'.
+      placeholder: my-new-repo
+    validations:
+      required: true
+  - type: input
+    id: description
+    attributes:
+      label: Description
+      description: One sentence, shown on GitHub.
+    validations:
+      required: true
+  - type: dropdown
+    id: visibility
+    attributes:
+      label: Visibility
+      options: [public, private]
+      default: 0
+    validations:
+      required: true
+  - type: input
+    id: topics
+    attributes:
+      label: Topics
+      description: Comma-separated, lower case (optional).
+      placeholder: opentofu, demo
+  - type: dropdown
+    id: protection
+    attributes:
+      label: Branch protection
+      description: Ruleset on the default branch (no deletion, no force-push, pull requests).
+      options: ["yes", "no"]
+      default: 0
+    validations:
+      required: true

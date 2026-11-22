@@ -69,11 +69,13 @@
       "managerFilePatterns": [
         "/^ansible/.+\\.ya?ml$/",
         "/^scripts/wsl/.+\\.ps1$/",
-        "/^scripts/[^/]+\\.sh$/"
+        "/^scripts/[^/]+\\.sh$/",
+        "/^kubernetes/.+\\.ya?ml$/"
       ],
       "matchStrings": [
         "(?:^|\\n)[ \\t]*# renovate: datasource=docker depName=(?<depName>\\S+)\\r?\\n\\s*[\\w-]+: \"[^\"]*:(?<currentValue>[^@\"]+)@(?<currentDigest>sha256:[a-f0-9]{64})\"",
         "(?:^|\\n)[ \\t]*# renovate: datasource=docker depName=(?<depName>\\S+)\\r?\\n\\s*[A-Z_]+=\"[^\"]*:(?<currentValue>[^@\"]+)@(?<currentDigest>sha256:[a-f0-9]{64})\"",
+        "(?:^|\\n)[ \\t]*# renovate: datasource=docker depName=(?<depName>\\S+)\\r?\\n\\s*tag: \"?(?<currentValue>[^\"@\\s]+)\"?\\r?\\n",
         "(?:^|\\n)[ \\t]*# renovate: datasource=docker depName=(?<depName>\\S+)\\r?\\n\\s*\\[string\\]\\$\\w+ = '[^']*:(?<currentValue>[^@']+)@(?<currentDigest>sha256:[a-f0-9]{64})'"
       ],
       "datasourceTemplate": "docker"

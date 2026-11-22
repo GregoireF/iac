@@ -1,0 +1,38 @@
+name: "Request: new app on the cluster"
+description: Deploy a Helm chart from an OCI registry through Flux (golden path)
+title: "[request] new app: "
+labels: ["request:app"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Creates `kubernetes/apps/base/<name>/` (OCIRepository + HelmRelease) and adds it to the local overlay.
+        The namespace `apps` enforces the **restricted** Pod Security Standard: the chart values must allow it.
+  - type: input
+    id: name
+    attributes:
+      label: Application name
+      description: A DNS label (lower case, digits, '-').
+      placeholder: whoami
+    validations:
+      required: true
+  - type: input
+    id: chart
+    attributes:
+      label: Chart (OCI URL)
+      placeholder: oci://ghcr.io/stefanprodan/charts/podinfo
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Chart version
+      placeholder: 6.17.0
+    validations:
+      required: true
+  - type: input
+    id: updates
+    attributes:
+      label: Updates source
+      description: GitHub owner/repository whose releases track the chart, for Renovate (optional; otherwise the OCI tags are used).
+      placeholder: stefanprodan/podinfo

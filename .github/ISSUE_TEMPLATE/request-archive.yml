@@ -1,0 +1,16 @@
+name: "Request: archive a repository"
+description: Archive a managed repository (never deleted — the OPA policy forbids it)
+title: "[request] archive: "
+labels: ["request:archive"]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Repository name
+    validations:
+      required: true
+  - type: textarea
+    id: reason
+    attributes:
+      label: Reason
+      description: Kept in the pull request for the record (optional).
