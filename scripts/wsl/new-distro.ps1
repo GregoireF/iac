@@ -103,7 +103,15 @@ ansible --version | head -1
 if ($SkipProvision) { Write-Host 'Done (provisioning skipped).'; return }
 $wslRepo = (wsl -d $Name -e wslpath -a ($repo -replace '\\', '/')).Trim()
 $playbooks = @('playbooks/workstation.yml') + $(if ($WithCluster) { @('playbooks/cluster.yml') } else { @() })
+# Git identity for the distribution, read from this machine's git config (never stored in the repository)
+$vars = Join-Path $env:TEMP 'iac-distro-vars.json'
+[IO.File]::WriteAllText($vars, (@{
+      workstation_git_name  = "$(git config --global user.name)"
+      workstation_git_email = "$(git config --global user.email)"
+    } | ConvertTo-Json), [Text.UTF8Encoding]::new($false))
+$wslVars = (wsl -d $Name -e wslpath -a ($vars -replace '\\', '/')).Trim()
 foreach ($pb in $playbooks) {
   Write-Host "==> ansible-playbook $pb"
-  Invoke-InDistro ("set -eu`nexport PATH=`$HOME/.local/bin:/usr/local/go/bin:`$PATH`ncd '$wslRepo/ansible'`nANSIBLE_CONFIG=ansible.cfg ansible-playbook $pb")
+  Invoke-InDistro ("set -eu`nexport PATH=`$HOME/.local/bin:/usr/local/go/bin:`$PATH`ncd '$wslRepo/ansible'`nANSIBLE_CONFIG=ansible.cfg ansible-playbook $pb -e @'$wslVars'")
 }
+Remove-Item $vars -ErrorAction SilentlyContinue

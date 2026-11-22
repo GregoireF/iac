@@ -14,6 +14,7 @@ workstation_apt_packages:
   - gnupg
   - jq
   - make
+  - openssh-client # ssh-keygen: the distribution's commit-signing key
   - rsync # molecule-plugins docker driver copies the build context with it
   - shellcheck
   - unzip
@@ -22,6 +23,12 @@ workstation_apt_packages:
 # Docker Engine from Docker's official apt repository
 # (https://docs.docker.com/engine/install/debian/)
 workstation_docker_enabled: true
+
+# Git identity and commit signing inside the distribution (tasks/git.yml). Name and email are empty
+# here on purpose: scripts/wsl/new-distro.ps1 passes the Windows git identity, nothing personal is stored.
+workstation_git_name: ""
+workstation_git_email: ""
+workstation_git_signing_key: "{{ ansible_env.HOME }}/.ssh/id_ed25519_signing"
 
 # Install only these names from workstation_binaries (empty = all), e.g. -e '{"workstation_binaries_only":["tofu"]}'
 workstation_binaries_only: []

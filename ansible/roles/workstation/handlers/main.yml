@@ -1,0 +1,7 @@
+---
+- name: Show the distribution signing key
+  ansible.builtin.debug:
+    msg:
+      - "A signing key was created for this distribution. Register it once, as a SIGNING key:"
+      - "  GitHub → Settings → SSH and GPG keys → New SSH key → Key type: Signing key"
+      - "  {{ (workstation_git_pub.content | b64decode) | trim }}"
