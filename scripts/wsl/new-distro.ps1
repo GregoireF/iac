@@ -10,7 +10,7 @@
   Re-running without -Recreate resumes: existing distribution kept, uv/Ansible checked, playbook re-applied.
 .EXAMPLE
   .\scripts\wsl\new-distro.ps1                   # create or resume "iac" in D:\WSL\iac, user = Windows user
-  .\scripts\wsl\new-distro.ps1 -WithCluster      # also create the kind cluster + Flux (playbooks/cluster.yml)
+  .\scripts\wsl\new-distro.ps1 -WithCluster      # also create the k3d cluster + Flux (playbooks/cluster.yml)
 #>
 [CmdletBinding()]
 param(
