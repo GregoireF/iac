@@ -93,6 +93,10 @@ security: trivy checkov
 docs:
     scripts/terraform-docs.sh
 
+# Docs quality: markdownlint, typos, dead links, every mermaid diagram renders (same as CI)
+docs-lint *args:
+    scripts/check-docs.sh {{ args }}
+
 # Check that module docs are up to date (same as CI)
 docs-check: docs
     git diff --exit-code -- modules/

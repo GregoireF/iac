@@ -1,0 +1,52 @@
+# Documentation gates, same script as `just docs-lint` (scripts/check-docs.sh):
+# markdownlint, typos, lychee (dead links), and every ```mermaid block must render.
+# Weekly run: external links rot even when nothing changes here.
+name: docs-quality
+
+on:
+  pull_request:
+    paths: ["**/*.md", ".markdownlint-cli2.yaml", "_typos.toml", "lychee.toml", "scripts/check-docs.sh", ".github/workflows/docs-quality.yml"]
+  push:
+    branches: [main]
+    paths: ["**/*.md", ".markdownlint-cli2.yaml", "_typos.toml", "lychee.toml", "scripts/check-docs.sh"]
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: docs-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  LYCHEE_VERSION: "0.24.2" # renovate: datasource=github-releases depName=lycheeverse/lychee
+
+jobs:
+  docs:
+    name: markdownlint · typos · links · mermaid
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+      - name: Install typos and lychee (checksum verified)
+        run: |
+          set -euo pipefail
+          uv tool install "typos==1.52.2"
+          cd "$RUNNER_TEMP"
+          base="https://github.com/lycheeverse/lychee/releases/download/lychee-v${LYCHEE_VERSION}"
+          tgz=lychee-x86_64-unknown-linux-gnu.tar.gz
+          curl -fsSLO "$base/$tgz"
+          echo "$(curl -fsSL "$base/$tgz.sha256" | awk '{print $1}')  $tgz" | sha256sum -c -
+          tar -xzf "$tgz" --strip-components=1 lychee-x86_64-unknown-linux-gnu/lychee
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+      - name: Docs gates
+        env:
+          # authenticated link checks against github.com are not rate-limited as hard
+          GITHUB_TOKEN: ${{ github.token }}
+        run: scripts/check-docs.sh

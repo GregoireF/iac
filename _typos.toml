@@ -1,0 +1,9 @@
+# typos (https://github.com/crate-ci/typos), run by scripts/check-docs.sh
+[files]
+extend-exclude = [
+  "*.lock.hcl",
+  "go.sum",
+  "rendered/",
+  ".terraform/",
+  ".lycheecache",
+]

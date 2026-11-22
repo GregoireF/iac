@@ -68,10 +68,12 @@
       "customType": "regex",
       "managerFilePatterns": [
         "/^ansible/.+\\.ya?ml$/",
-        "/^scripts/wsl/.+\\.ps1$/"
+        "/^scripts/wsl/.+\\.ps1$/",
+        "/^scripts/[^/]+\\.sh$/"
       ],
       "matchStrings": [
         "(?:^|\\n)[ \\t]*# renovate: datasource=docker depName=(?<depName>\\S+)\\r?\\n\\s*[\\w-]+: \"[^\"]*:(?<currentValue>[^@\"]+)@(?<currentDigest>sha256:[a-f0-9]{64})\"",
+        "(?:^|\\n)[ \\t]*# renovate: datasource=docker depName=(?<depName>\\S+)\\r?\\n\\s*[A-Z_]+=\"[^\"]*:(?<currentValue>[^@\"]+)@(?<currentDigest>sha256:[a-f0-9]{64})\"",
         "(?:^|\\n)[ \\t]*# renovate: datasource=docker depName=(?<depName>\\S+)\\r?\\n\\s*\\[string\\]\\$\\w+ = '[^']*:(?<currentValue>[^@']+)@(?<currentDigest>sha256:[a-f0-9]{64})'"
       ],
       "datasourceTemplate": "docker"
@@ -94,6 +96,11 @@
       "groupSlug": "all-minor-patch",
       "automerge": true,
       "platformAutomerge": true
+    },
+    {
+      "description": "lychee tags its releases lychee-vX.Y.Z",
+      "matchDepNames": ["lycheeverse/lychee"],
+      "extractVersion": "^lychee-v(?<version>.+)$"
     },
     {
       "description": "Tools whose sha256 is pinned in the workstation role (no usable vendor checksum file): separate PR, hash updated by hand",

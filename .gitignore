@@ -42,3 +42,5 @@ __pycache__/
 rendered/
 # Lock files belong to root stacks only, not to reusable modules
 modules/**/.terraform.lock.hcl
+# lychee link cache (scripts/check-docs.sh)
+.lycheecache
