@@ -1,0 +1,96 @@
+# Self-service requests (IssueOps, docs/how-to/self-service.md).
+# An issue opened from a request-* form is validated by scripts/request.py; the bot comments the exact
+# change it would make and labels the issue request:ready or request:invalid. Nothing is committed here:
+# the owner runs `just request <n>`, which makes a signed commit and opens the pull request
+# (single human author, docs/adr/0002-solo-flow.md). Only the owner's issues are processed.
+name: requests
+
+on:
+  issues:
+    types: [opened, edited, labeled]
+
+permissions: {}
+
+concurrency:
+  group: requests-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: validate request
+    if: >-
+      github.event.issue.author_association == 'OWNER' &&
+      contains(join(github.event.issue.labels.*.name, ','), 'request:')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate and preview
+        id: preview
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          LABELS: ${{ join(github.event.issue.labels.*.name, ' ') }}
+          NUMBER: ${{ github.event.issue.number }}
+        run: |
+          set -euo pipefail
+          kind=""
+          for l in $LABELS; do
+            case "$l" in request:repository|request:app|request:archive|request:release) kind="${l#request:}" ;; esac
+          done
+          [ -n "$kind" ] || { echo "no request kind label"; echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0; }
+          printf '%s' "$ISSUE_BODY" > "$RUNNER_TEMP/body.md"
+          out="$RUNNER_TEMP/comment.md"
+          echo "<!-- iac-request -->" > "$out"
+          if python3 scripts/request.py apply --kind "$kind" --body-file "$RUNNER_TEMP/body.md" > "$RUNNER_TEMP/plan.json"; then
+            echo "valid=true" >> "$GITHUB_OUTPUT"
+            {
+              echo "### ✅ Valid \`$kind\` request"
+              echo
+              if [ "$(jq -r .action "$RUNNER_TEMP/plan.json")" = release ]; then
+                echo "\`just request $NUMBER\` will run **release.yml** with bump \`$(jq -r .bump "$RUNNER_TEMP/plan.json")\`, then open the pull request that moves \`terraform/github\` to the new tag."
+              else
+                echo "\`just request $NUMBER\` will commit this change on \`$(jq -r .branch "$RUNNER_TEMP/plan.json")\` and open **$(jq -r .title "$RUNNER_TEMP/plan.json")**, where the plan is posted."
+                note="$(jq -r '.note // empty' "$RUNNER_TEMP/plan.json")"
+                [ -z "$note" ] || { echo; echo "> $note"; }
+                git add -A -N .
+                echo; echo "<details><summary>Change preview</summary>"; echo; echo '```diff'
+                git diff | head -c 60000
+                echo '```'; echo "</details>"
+              fi
+            } >> "$out"
+          else
+            echo "valid=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "### ❌ The \`$kind\` request needs a fix"
+              echo
+              jq -r '.errors[] | "- " + .' "$RUNNER_TEMP/plan.json"
+              echo
+              echo "Edit the issue: it is checked again automatically."
+            } >> "$out"
+          fi
+      - name: Comment and label
+        if: steps.preview.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUMBER: ${{ github.event.issue.number }}
+          VALID: ${{ steps.preview.outputs.valid }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          id="$(gh api "repos/$REPO/issues/$NUMBER/comments" --paginate \
+                --jq '[.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- iac-request -->")))][0].id // empty')"
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$id" -F body=@"$RUNNER_TEMP/comment.md" > /dev/null
+          else
+            gh api "repos/$REPO/issues/$NUMBER/comments" -F body=@"$RUNNER_TEMP/comment.md" > /dev/null
+          fi
+          if [ "$VALID" = true ]; then
+            gh issue edit "$NUMBER" -R "$REPO" --add-label request:ready --remove-label request:invalid
+          else
+            gh issue edit "$NUMBER" -R "$REPO" --add-label request:invalid --remove-label request:ready
+          fi

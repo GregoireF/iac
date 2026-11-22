@@ -604,14 +604,42 @@ locals {
   # `ship sync`, and its issue forms use it (GregoireF/ship-it#7).
   self_managed_labels = toset(["ship-it", "kiwa"])
 
+  # Labels that exist in one repository only: iac's self-service requests (issue forms,
+  # .github/ISSUE_TEMPLATE/request-*.yml, and .github/workflows/requests.yml).
+  extra_labels = {
+    iac = {
+      "request:repository" = { color = "5319e7", description = "Self-service: new repository" }
+      "request:app"        = { color = "5319e7", description = "Self-service: new app on the cluster" }
+      "request:archive"    = { color = "5319e7", description = "Self-service: archive a repository" }
+      "request:release"    = { color = "5319e7", description = "Self-service: release the repository module" }
+      "request:ready"      = { color = "0e8a16", description = "Validated: the owner runs `just request <n>`" }
+      "request:invalid"    = { color = "b60205", description = "The form has errors: see the bot comment" }
+      # Owner commands on pull requests (.github/workflows/commands.yml)
+      "run:plan"  = { color = "1d76db", description = "Command: OpenTofu plans of this branch, posted here" }
+      "run:e2e"   = { color = "1d76db", description = "Command: k3d + Flux end-to-end test of this branch" }
+      "run:check" = { color = "1d76db", description = "Command: every gate on this branch" }
+    }
+  }
+
   # Flatten repos × labels into a single map for for_each.
-  repo_labels = merge([
-    for repo_name, _ in local.repositories : {
-      for label_name, label_cfg in local.standard_labels :
-      "${repo_name}:${label_name}" => merge(label_cfg, {
-        repository = repo_name
-        name       = label_name
-      })
-    } if !contains(local.self_managed_labels, repo_name)
-  ]...)
+  repo_labels = merge(
+    merge([
+      for repo_name, _ in local.repositories : {
+        for label_name, label_cfg in local.standard_labels :
+        "${repo_name}:${label_name}" => merge(label_cfg, {
+          repository = repo_name
+          name       = label_name
+        })
+      } if !contains(local.self_managed_labels, repo_name)
+    ]...),
+    merge([
+      for repo_name, labels in local.extra_labels : {
+        for label_name, label_cfg in labels :
+        "${repo_name}:${label_name}" => merge(label_cfg, {
+          repository = repo_name
+          name       = label_name
+        })
+      }
+    ]...),
+  )
 }

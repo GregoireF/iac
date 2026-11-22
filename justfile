@@ -5,9 +5,20 @@
 set shell := ["bash", "-euo", "pipefail", "-c"]
 set dotenv-load
 
-# List all available recipes
+# Pick a recipe in an interactive menu (fzf), or list them when not in a terminal
 default:
-    @just --list --unsorted
+    #!/usr/bin/env bash
+    if [ -t 0 ] && [ -t 1 ] && command -v fzf >/dev/null; then
+      just --choose --chooser "fzf --height=60% --layout=reverse --prompt='just › ' --preview='just --show {}' --preview-window=right,60%"
+    else
+      just --list --unsorted
+    fi
+
+# ─── Self-service ─────────────────────────────────────────────────────────────
+
+# Turn a validated request issue (label request:ready) into a signed commit and a pull request
+request issue:
+    scripts/request.sh {{ issue }}
 
 # ─── Setup ────────────────────────────────────────────────────────────────────
 
