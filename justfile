@@ -11,13 +11,11 @@ default:
 
 # ─── Setup ────────────────────────────────────────────────────────────────────
 
-# First-time setup: install all tools and hooks
+# First-time setup: git hooks and Go modules (tools come from `just workstation`)
 setup:
     #!/usr/bin/env bash
     set -euo pipefail
-    echo "→ OpenTofu (tenv)"
-    tenv tofu install
-    tenv tofu use "$(cat .opentofu-version)"
+    echo "→ tools: tofu $(tofu version | head -1 | awk '{print $2}') (expected v$(cat .opentofu-version))"
     echo "→ pre-commit hooks (including commit-msg stage)"
     pre-commit install --install-hooks
     pre-commit install --hook-type commit-msg
