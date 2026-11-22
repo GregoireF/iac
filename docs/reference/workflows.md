@@ -46,7 +46,7 @@ flowchart TB
 | `security-scan.yml` | pull request, push, weekly, manual | Trivy and Checkov, results in the Security tab |
 | `scorecard.yml` | push, weekly, manual | OpenSSF Scorecard |
 | `docs.yml` | pull request, push (modules) | Fails if module READMEs differ from terraform-docs output |
-| `docs-quality.yml` | pull request, push (Markdown), weekly, manual | `scripts/check-docs.sh` |
+| `docs-quality.yml` | pull request, push (Markdown), weekly, manual | `scripts/check-docs.sh`; pull requests check internal links only, external links are checked on `main`, weekly and on demand |
 | `release.yml` | manual | Semver tag and GitHub release of the module |
 | `requests.yml` | issue opened, edited, labelled (owner only) | Validates a request form with `scripts/request.py`, comments the exact change, labels `request:ready` or `request:invalid` |
 | `commands.yml` | pull request labelled `run:*` (owner only) | Dispatches plans, end to end or every gate on the PR branch, then removes the label |
