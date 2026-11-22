@@ -43,6 +43,7 @@ tofu init -backend=false && tofu test
 ```
 
 <!-- BEGIN_TF_DOCS -->
+<!-- markdownlint-disable -->
 ## Requirements
 
 | Name | Version |
@@ -91,4 +92,5 @@ No modules.
 | <a name="output_name"></a> [name](#output_name) | Repository name. |
 | <a name="output_node_id"></a> [node_id](#output_node_id) | GraphQL node ID. |
 | <a name="output_ssh_clone_url"></a> [ssh_clone_url](#output_ssh_clone_url) | SSH clone URL. |
+<!-- markdownlint-restore -->
 <!-- END_TF_DOCS -->

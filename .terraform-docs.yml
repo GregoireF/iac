@@ -6,9 +6,12 @@ version: ">= 0.25"
 output:
   file: README.md
   mode: inject
+  # Generated tables may hold <pre> blocks and pipes inside types: markdownlint skips them
   template: |-
     <!-- BEGIN_TF_DOCS -->
+    <!-- markdownlint-disable -->
     {{ .Content }}
+    <!-- markdownlint-restore -->
     <!-- END_TF_DOCS -->
 
 settings:
