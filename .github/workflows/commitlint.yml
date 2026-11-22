@@ -27,10 +27,10 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      # Dependabot commit messages include full SHA hashes (165+ chars) and cannot
-      # be shortened. Skip the lint step for bot PRs — the job still succeeds so
-      # the required "Commitlint" check is satisfied.
+      # Bot commit messages (Renovate) can carry full digests that exceed line limits.
+      # Skip the lint step for bots — the job still succeeds, so the required
+      # "Commitlint" check is satisfied; commit-policy.yml still checks their trailers.
       - uses: wagoid/commitlint-github-action@b948419dd99f3fd78a6548d48f94e3df7f6bf3ed # v6.2.1
-        if: github.actor != 'dependabot[bot]'
+        if: ${{ !endsWith(github.actor, '[bot]') }}
         with:
           configFile: .commitlintrc.yml
