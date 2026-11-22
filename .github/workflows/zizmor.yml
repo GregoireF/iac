@@ -9,6 +9,7 @@ on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch: # `/check` (commands.yml)
 
 # Nothing by default; each job asks for what it needs.
 permissions: {}

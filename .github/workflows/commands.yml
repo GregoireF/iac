@@ -1,0 +1,65 @@
+# Owner commands on pull requests, as labels (docs/how-to/self-service.md):
+#   run:plan    OpenTofu plans for the PR branch, posted on the PR
+#   run:e2e     k3d + Flux end to end on the PR branch
+#   run:check   every gate (tests, policies, Ansible, workflow audit, docs, scans) on the PR branch
+# Labels rather than comment commands: only a privileged user can add one, and pull_request is a safe
+# trigger (zizmor "dangerous-triggers" recommends exactly this over issue_comment). The label is removed
+# once the runs are dispatched, so it can be added again.
+name: commands
+
+on:
+  pull_request:
+    types: [labeled]
+
+permissions: {}
+
+concurrency:
+  group: commands-${{ github.event.pull_request.number }}-${{ github.event.label.name }}
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    name: ${{ github.event.label.name }}
+    if: >-
+      startsWith(github.event.label.name, 'run:') &&
+      github.event.sender.login == github.repository_owner &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Dispatch on the PR branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD: ${{ github.head_ref }}
+          LABEL: ${{ github.event.label.name }}
+          SERVER: ${{ github.server_url }}
+        run: |
+          set -euo pipefail
+          reply="$RUNNER_TEMP/reply.md"
+          run() { gh workflow run "$1" -R "$REPO" --ref "$HEAD" "${@:2}"; echo "- \`$1\`" >> "$reply"; }
+          echo "### \`$LABEL\` — dispatched on \`$HEAD\`" > "$reply"
+          case "$LABEL" in
+            run:plan)
+              run tofu-github-plan.yml -f pr="$PR"
+              run tofu-doppler-plan.yml -f pr="$PR"
+              ;;
+            run:e2e)
+              run k8s-e2e.yml
+              ;;
+            run:check)
+              for wf in tofu-test.yml policy.yml ansible.yml zizmor.yml docs-quality.yml security-scan.yml; do run "$wf"; done
+              ;;
+            *)
+              echo "Unknown command label \`$LABEL\`: use run:plan, run:e2e or run:check." > "$reply"
+              ;;
+          esac
+          printf '\nRuns: %s/%s/actions?query=branch%%3A%s\n' "$SERVER" "$REPO" "$HEAD" >> "$reply"
+          gh api "repos/$REPO/issues/$PR/comments" -F body=@"$reply" > /dev/null
+          gh pr edit "$PR" -R "$REPO" --remove-label "$LABEL"

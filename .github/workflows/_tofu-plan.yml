@@ -7,6 +7,11 @@ on:
         description: "Relative path to the OpenTofu stack (e.g. terraform/github)"
         type: string
         required: true
+      pr:
+        description: "Pull request that receives the plan comment when not triggered by pull_request (`/plan`)"
+        type: string
+        required: false
+        default: ""
     secrets:
       TF_API_TOKEN:
         required: true
@@ -63,10 +68,11 @@ jobs:
 
       - name: Post plan comment
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' || inputs.pr != ''
         env:
           STACK: ${{ inputs.stack }}
           OUTCOME: ${{ steps.plan.outcome }}
+          PR: ${{ inputs.pr }}
         with:
           script: |
             const fs  = require('fs');
@@ -79,6 +85,8 @@ jobs:
             const outcome = process.env.OUTCOME;
             const icon    = outcome === 'success' ? '✅' : '❌';
             const marker  = `<!-- tofu-plan:${stack} -->`;
+            // pull_request event, or /plan (workflow_dispatch with the PR number)
+            const issue   = context.issue.number || Number(process.env.PR);
 
             const body = [
               marker,
@@ -98,7 +106,7 @@ jobs:
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo:  context.repo.repo,
-              issue_number: context.issue.number,
+              issue_number: issue,
             });
 
             const existing = comments.find(c => c.body?.includes(marker));
@@ -114,7 +122,7 @@ jobs:
               await github.rest.issues.createComment({
                 owner:        context.repo.owner,
                 repo:         context.repo.repo,
-                issue_number: context.issue.number,
+                issue_number: issue,
                 body,
               });
             }
