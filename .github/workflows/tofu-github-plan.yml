@@ -8,6 +8,13 @@ on:
       - "modules/github/**"
       - ".github/workflows/_tofu-*.yml"
       - ".github/workflows/tofu-github-*.yml"
+  # `/plan` on a pull request (commands.yml) runs it on the PR branch
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "Pull request number that receives the plan comment"
+        type: string
+        required: false
 
 permissions:
   contents: read
@@ -22,5 +29,6 @@ jobs:
     uses: ./.github/workflows/_tofu-plan.yml
     with:
       stack: terraform/github
+      pr: ${{ inputs.pr || '' }}
     secrets:
       TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}

@@ -10,6 +10,7 @@ on:
   push:
     branches: [main]
     paths: ["policies/**", "kubernetes/**", "scripts/check-manifests.sh"]
+  workflow_dispatch: # `/check` (commands.yml)
 
 permissions: {}
 

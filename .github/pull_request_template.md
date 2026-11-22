@@ -9,11 +9,15 @@
 
 ## Checklist
 
-- [ ] `just fmt` passes (HCL formatted)
-- [ ] `just validate` passes
-- [ ] `just test` passes (unit tests)
-- [ ] Plan output reviewed in the PR comment
+- [ ] `just check` passes locally (it runs every CI gate)
+- [ ] Plan output reviewed in the PR comment (infrastructure changes)
+- [ ] Commits signed and signed off, one topic each
 - [ ] No secrets committed
+
+## Commands
+
+Add a label to run a command on this branch (owner only, the label removes itself):
+`run:plan` OpenTofu plans posted here · `run:e2e` k3d + Flux end to end · `run:check` every gate.
 
 ## References
 
