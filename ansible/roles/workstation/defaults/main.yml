@@ -122,6 +122,19 @@ workstation_binaries:
     url: "https://github.com/yannh/kubeconform/releases/download/v@V@/kubeconform-linux-amd64.tar.gz"
     checksum: "sha256:https://github.com/yannh/kubeconform/releases/download/v@V@/CHECKSUMS"
     archive: true
+  # renovate: datasource=github-releases depName=cli/cli
+  - name: gh
+    version: "2.105.0"
+    url: "https://github.com/cli/cli/releases/download/v@V@/gh_@V@_linux_amd64.tar.gz"
+    checksum: "sha256:https://github.com/cli/cli/releases/download/v@V@/gh_@V@_checksums.txt"
+    archive: true
+    archive_path: "gh_@V@_linux_amd64/bin/gh"
+  # renovate: datasource=github-releases depName=junegunn/fzf
+  - name: fzf
+    version: "0.75.0"
+    url: "https://github.com/junegunn/fzf/releases/download/v@V@/fzf-@V@-linux_amd64.tar.gz"
+    checksum: "sha256:https://github.com/junegunn/fzf/releases/download/v@V@/fzf_@V@_checksums.txt"
+    archive: true
   # renovate: datasource=github-releases depName=lycheeverse/lychee
   - name: lychee
     version: "0.24.2"

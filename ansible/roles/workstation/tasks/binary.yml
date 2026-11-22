@@ -36,7 +36,7 @@
 
     - name: "Install binary | {{ tool.name }}"
       vars:
-        workstation_extracted: "/tmp/iac-tools/{{ tool.name }}/{{ tool.archive_path | default(tool.name) }}"
+        workstation_extracted: "/tmp/iac-tools/{{ tool.name }}/{{ (tool.archive_path | default(tool.name)) | replace('@V@', tool.version) }}"
       ansible.builtin.copy:
         src: "{{ workstation_extracted if (tool.archive | default(false)) else workstation_download.dest }}"
         dest: "{{ workstation_bin_dir }}/{{ tool.name }}"
