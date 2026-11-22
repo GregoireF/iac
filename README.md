@@ -11,9 +11,27 @@
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/GregoireF/iac/badge)](https://securityscorecards.dev/viewer/?uri=github.com/GregoireF/iac)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+## Why I built this
+
+I was tired of clicking through the same settings in every one of my GitHub repositories, and of finding
+them slightly different each time. I wanted them declared once, in code, and kept identical.
+I also wanted to learn platform engineering by doing it on something real rather than in tutorials,
+and to show how I work: the decisions, the tests, the security, the documentation.
+
+What I learned along the way:
+
+- **Infrastructure can be tested like code** — `tofu test` with mocked providers, OPA and Kyverno policies, Molecule for Ansible roles.
+- **Workflows are an attack surface** — template injection, over-broad tokens, unpinned actions; zizmor, signatures and checksums everywhere.
+- **GitOps is a loop, not a deploy script** — Flux reconciling an OCI artifact proves even uncommitted manifests on a real cluster.
+- **Small batches and fast feedback work alone too** — *The DevOps Handbook*'s ideas, applied by one person: automate what repeats, check locally what CI checks.
+
+What it gives me every day: every repository with the same protections, labels and conventions without effort;
+tooling that keeps itself up to date while I only review; and a safe local lab to try Kubernetes, observability
+and Talos without breaking anything or paying for it.
+
 ## In 30 seconds
 
-- **GitHub as code** — 14 repositories (rulesets, labels, environments, secrets, files) managed by one OpenTofu module, tested with `tofu test` and guarded by OPA policies on the plan.
+- **GitHub as code** — 14 repositories (rulesets, labels, environments, secrets, files) managed by one OpenTofu module, tested with `tofu test`, with OPA rules against destructive plans.
 - **Reproducible workstation** — one PowerShell command builds a dedicated WSL distribution; Ansible installs ~20 tools, each from its official release and checksum-verified.
 - **GitOps cluster** — k3d (k3s) with Flux, which reconciles this repository's `kubernetes/` tree pushed as an OCI artifact: uncommitted manifests are proven on a real cluster.
 - **Same gates everywhere** — `just check` runs exactly what CI runs: format, lint, unit tests, OPA, kubeconform + Kyverno, ansible-lint, workflow security audit, IaC scanners, docs checks.
