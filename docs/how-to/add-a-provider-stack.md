@@ -30,5 +30,5 @@ flowchart TB
 
 5. `just check`, then a pull request: the plan is posted as a comment.
 
-Backends change in phase 2 of the [roadmap](../ROADMAP.md): state encrypted by OpenTofu and stored in this
+Backends change in phase 4 of the [roadmap](../ROADMAP.md): state encrypted by OpenTofu and stored in this
 repository, instead of HCP Terraform. The generator will follow.

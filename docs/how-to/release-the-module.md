@@ -2,7 +2,7 @@
 
 `terraform/github/repos.tf` consumes the module through an immutable git tag
 (`?ref=v1.3.1`), because HCP Terraform only uploads `terraform/github/`. A module change therefore
-reaches the stack in two steps. This disappears in phase 2 of the [roadmap](../ROADMAP.md) (decision D10:
+reaches the stack in two steps. This disappears in phase 4 of the [roadmap](../ROADMAP.md) (decision D10:
 relative module path once HCP Terraform is gone).
 
 ```mermaid

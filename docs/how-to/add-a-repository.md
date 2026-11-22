@@ -50,7 +50,7 @@ flowchart LR
 3. Open a pull request. The `tofu-github-plan` workflow posts the plan as a comment. Read it for
    deletions: the OPA rules that refuse a repository deletion or a public repository without
    vulnerability alerts are unit-tested today, and will gate the real plan once state leaves
-   HCP Terraform (phase 2, [Policies](../reference/policies.md)).
+   HCP Terraform (phase 4, [Policies](../reference/policies.md)).
 4. Merge when the plan shows only the expected creations. `tofu-github-apply` applies it.
 
 ## Import an existing repository

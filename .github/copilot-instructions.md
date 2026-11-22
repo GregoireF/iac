@@ -6,7 +6,7 @@ Flux for Kubernetes, OPA and Kyverno for policies. Read [docs/README.md](../docs
 ## Stack
 
 - **IaC engine**: OpenTofu `>= 1.13`, version in `.opentofu-version` — use the `tofu` CLI, never `terraform`
-- **State backend**: HCP Terraform (remote execution, organisation `gregoiref`) until phase 2 of `docs/ROADMAP.md`
+- **State backend**: HCP Terraform (remote execution, organisation `gregoiref`) until phase 4 of `docs/ROADMAP.md`
 - **Auth**: GitHub App (ephemeral tokens via the `app_auth {}` block)
 - **Workstation**: WSL distribution `iac` built by `scripts/wsl/new-distro.ps1` and `ansible/`
 - **Kubernetes**: k3d (k3s) + Flux 2.10, `kubernetes/` pushed as an OCI artifact

@@ -2,7 +2,7 @@
 
 Short records of decisions that shape the repository, in the format popularised by
 [Michael Nygard](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions): context, decision, consequences.
-Smaller decisions live in the [roadmap](../ROADMAP.md) table (D1–D19).
+Smaller decisions live in the [roadmap](../ROADMAP.md) table (D1–D23).
 
 | ADR | Title | Status |
 |---|---|---|

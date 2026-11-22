@@ -1,157 +1,185 @@
-# Roadmap — iac "platform-next"
+# Roadmap
 
-> One person, zero budget, maximum automation. Everything that can run without a human runs without a human.
+> **Vision** — a modern infrastructure engineering laboratory: experiment, automate, document, industrialize.
+> Infrastructure here is **versioned, automated, testable and reproducible**.
+> Long-term goal: a curated collection of modern infrastructure engineering patterns.
+> One maintainer, zero budget, maximum automation: everything that can run without a human runs without a human.
 
-Snapshot: 2026-11-20. Versions were read from upstream release APIs on 2026-11-19/20; after that, Renovate owns them.
+Updated 2026-11-22. This page replaces the former `IDEA.md`: every idea is either in a phase below or parked with its reason.
 
-## At a glance
-
-No dates are promised: phases are ordered, and each one starts when the previous is green.
+## Where we are
 
 ```mermaid
 timeline
   title Phases by status
-  section Done
-    1 Upgrade and autopilot : Renovate, CI hardening, policy-as-code
-    3 Ansible : WSL distro, workstation role, Molecule
-    4 Kubernetes and Flux : k3d, OCI artifact, k8s-e2e
-    Docs : Diátaxis, Mermaid, docs quality gates
-    5 Self-service : request forms, run labels, just menu
+  section In review (PR stack #55 → #60)
+    1 Foundations : AI workflows out, Renovate, toolchain, CI security
+    2 Platform : policy as code, Ansible workstation, k3d and Flux
+    3 Docs and self-service : Diátaxis, Mermaid, request forms, run labels
   section Next
-    2 State migration : encrypted state in the repo, no HCP
-    6 Secrets and supply chain : SOPS and age, attestations, cosign
+    4 State and identity : encrypted state in the repo, no HCP, short-lived credentials
+    5 Secrets and supply chain : SOPS and age, attestations, cosign, SBOM
   section Later
-    7 Observability : LGTM and OpenTelemetry
-    8 Talos and Cilium : in Docker, in CI
-    9 Golden paths : templates, module repositories
+    6 Observability : LGTM and OpenTelemetry
+    7 Talos, Cilium, zero trust : in Docker, in CI
+    8 Golden paths and modules : templates, module repositories
+    9 Low-cost Kubernetes : autoscaling, frugal CI, costed ADR
     10 Showcase : docs site, live status, DORA
 ```
 
-What replaces what:
+### Next three actions
 
-```mermaid
-flowchart LR
-  ai["AI workflows<br/>GitHub Models, retired"] -->|D1| det["deterministic checks"]
-  hcp["HCP Terraform state"] -->|D2| enc["OpenTofu-encrypted state<br/>in this repository"]
-  dep["Dependabot + auto-merge"] -->|D3| ren["Renovate<br/>one weekly PR"]
-  kind["kind"] -->|D4| k3d["k3d / k3s"]
-  dop["Doppler"] -->|D8| sops["SOPS + age"]
-  bot["docs bot commits"] -->|D9| hook["pre-commit hook<br/>CI check only"]
-  ref["module ?ref= tags"] -->|D10| rel["relative module path"]
-  vic["Victoria stack (proposal)"] -->|D13| lgtm["LGTM + OpenTelemetry"]
-  classDef done fill:#e6f4ea,stroke:#34a853
-  classDef todo fill:#fef7e0,stroke:#f9ab00
-  class det,ren,k3d,hook done
-  class enc,sops,rel,lgtm todo
-```
+1. Merge the PR stack #56 → #60 (plans of #56 and #60 reviewed before merging).
+2. Phase 4: OpenTofu state encrypted in this repository, HCP Terraform and the `tfe` provider removed.
+3. Phase 4: inventory every long-lived credential and replace what can be short-lived.
 
-Green: in place. Amber: decided, not built yet.
+## Ideas → phases
+
+Status: ✅ done (in review) · 🔨 in progress · 📅 planned · 🅿️ parked.
+
+| Direction | Idea | Status | Where |
+|---|---|---|---|
+| 1. Terraform modules | VPC / networking | 📅 | Phase 7 — Kubernetes networking with Cilium (D12) |
+| | Kubernetes | 📅 | Phase 7 — Talos cluster as code |
+| | Cloudflare | 🅿️ | D19 — no budget, no public service yet |
+| | GitHub Actions runners | 🅿️ | D18 — GitHub-hosted runners are free for public repositories |
+| | Observability | 📅 | Phase 6 — observability kit |
+| | Secrets management | 📅 | Phase 5 — SOPS + age |
+| 2. Kubernetes & Talos | Talos Linux | 📅 | Phase 7 (D11) |
+| | GitOps / Flux | ✅ | Phase 2 — Flux reconciles an OCI artifact (D5) |
+| | ArgoCD | 🅿️ | D5 — Flux kept; one GitOps engine is enough |
+| | Secure cluster bootstrapping | 📅 | Phase 7 — Talos machine config as code |
+| 3. Platform engineering | Golden paths | 🔨 | Phase 3 (request forms) → Phase 8 (templates) |
+| | Infrastructure templates | 📅 | Phase 8 |
+| | Developer platform | 🔨 | Phase 3 — self-service forms, `run:*` labels, `just` menu |
+| | Deployment workflows | ✅ | Phases 1–3 — plan on PR, apply on merge, Flux |
+| 4. Observability | Prometheus, Loki, Grafana, OpenTelemetry | 📅 | Phase 6 (D13) |
+| 5. Self-hosting | Homelab, edge, private / hybrid cloud | 🅿️ | D23 — no hardware or budget; the k3d cluster stands in |
+| 6. CI/CD & automation | GitHub Actions, policy enforcement | ✅ | Phases 1–2 |
+| | Reusable workflows | 📅 | Phase 8 — `workflows` repository (ADR 0001) |
+| | Release automation | 🔨 | `release.yml` today; module repositories in phase 8 |
+| 7. Security & compliance | SOPS | 📅 | Phase 5 (D8) |
+| | Supply-chain security | 🔨 | Phase 1 (pinning, zizmor, dependency review) → Phase 5 (D16) |
+| | IAM, workload identity | 📅 | Phase 4 (D20) |
+| | Zero-trust networking | 📅 | Phase 7 (D21) |
+| | Vault | 🅿️ | D8 — SOPS + age, no service to run |
+| 8. Cost optimization | Autoscaling, low-cost Kubernetes | 📅 | Phase 9 (D18, D22) |
+| | Hetzner, spot instances | 🅿️ | D11 — local only until there is a budget |
+| 9. Future ecosystem | terraform-modules | 📅 | Phase 8 — one repository per published module (D17) |
+| | observability-kit, talos-cluster | 📅 | Phases 6–7 — folders here, publishable as OCI artifacts (D17) |
+| | homelab, cloudflare-tooling | 🅿️ | D23, D19 |
+
+## Phases
+
+Each phase ends when its **done when** holds; the next one starts only then (small batches, [ADR 0002](adr/0002-solo-flow.md)).
+
+### 1. Foundations — ✅ in review (#55 merged, #56, #57)
+
+- AI workflows removed (D1); Renovate replaces Dependabot (D3)
+- OpenTofu 1.13.9, Go 1.27, current providers; vulnerable Go modules upgraded
+- zizmor + actionlint clean, dependency review, single signed author per commit, docs checked not committed (D9)
+
+**Done when** every workflow is green on `main` and Renovate's first grouped PR merges by itself.
+
+### 2. Platform — ✅ in review (#58)
+
+- OPA rules for plans, Kyverno baseline for manifests
+- WSL distribution and workstation role (checksum-verified tools, Molecule) (D6)
+- k3d cluster reconciled by Flux from an OCI artifact, `k8s-e2e` in CI (D4, D5)
+
+**Done when** `just check` and `k8s-e2e` are green on `main`.
+
+### 3. Docs and self-service — ✅ in review (#59, #60)
+
+- Diátaxis documentation, Mermaid diagrams, docs quality gates
+- request forms → `just request` → signed pull request; `run:plan`, `run:e2e`, `run:check` labels; `just` menu (D14)
+
+**Done when** a real request goes from issue to merged pull request.
+
+### 4. State and identity — 📅 next
+
+- OpenTofu state encryption (`pbkdf2` + `aes_gcm`) stored on a `tfstate` branch; locking by Actions `concurrency` (D2)
+- HCP Terraform and the `tfe` provider removed; modules consumed by relative path (D10)
+- OPA rules enforced on the real saved plan (Conftest), not only unit-tested
+- Credentials inventory: every long-lived token replaced by a short-lived one where the target allows it; GitHub App permissions reviewed (D20)
+
+**Done when** a plan and an apply run without HCP, and no workflow holds a long-lived token it does not need.
+
+### 5. Secrets and supply chain — 📅
+
+- SOPS + age for OpenTofu and Flux; Doppler stack retired (D8)
+- GitHub artifact attestations, cosign-signed OCI artifacts verified by Flux, SBOM + scan, OpenSSF Scorecard ≥ 9 (D16)
+
+**Done when** Flux refuses an unsigned artifact in `k8s-e2e`.
+
+### 6. Observability — 📅
+
+- LGTM + OpenTelemetry Collector with a lite profile for the PC (D13); then Gatus (status), Garage (S3), cert-manager
+
+**Done when** podinfo's metrics, logs and traces show in Grafana, provisioned as code.
+
+### 7. Talos, Cilium and zero trust — 📅
+
+- Talos machine configuration as code; a Talos-in-Docker cluster in CI with the same Flux tree (D11)
+- Cilium as CNI with Hubble and Gateway API (D12)
+- Default-deny NetworkPolicies per namespace, then encrypted service-to-service traffic (D21)
+
+**Done when** `k8s-e2e` passes on Talos + Cilium with default deny.
+
+### 8. Golden paths and modules — 📅
+
+- Templates for an app, a repository, an OpenTofu module, an ephemeral preview environment (D15)
+- Published modules in `terraform-<provider>-<name>` repositories; reusable workflows in a `workflows` repository (D17, ADR 0001)
+
+**Done when** a new module repository is created, tested and released from a form.
+
+### 9. Low-cost Kubernetes — 📅
+
+- Requests and limits everywhere, lite cluster profile, `just down` when idle (D18)
+- Autoscaling: HorizontalPodAutoscaler, then event-driven autoscaling with KEDA (D22)
+- Weekly CI-minutes report; a costed ADR (homelab vs cloud) for the day 24/7 is needed
+
+**Done when** an app scales up and down on load in `k8s-e2e`.
+
+### 10. Showcase — 📅
+
+- Starlight site on GitHub Pages with live status (CI, versions, DORA metrics) and a weekly health issue (ADR 0002)
+- `AGENTS.md`, `examples/`
+
+**Done when** a visitor understands the platform in 30 seconds and can browse every decision.
 
 ## Decisions
 
 | # | Decision | Why |
 |---|---|---|
-| D1 | **Remove the three AI workflows** (issue triage, PR review, changelog) | They call `models.inference.ai.azure.com`; GitHub Models was retired on 2026-07-30 ([summary](https://daily.dev/posts/github-models-is-being-fully-retired-on-july-30-2026-bz8saavyw), [migration guide](https://www.cloudkaramchari.com/blog/github-models-retirement-migration-guide/)). `ai-pr-review` failed 4/4 runs since 2026-11-14 with `Name or service not known`. Replaced by deterministic checks. |
-| D2 | **100 % OpenTofu: leave HCP Terraform** | Encrypted state ([OpenTofu state encryption](https://opentofu.org/docs/language/state/encryption), `pbkdf2` + `aes_gcm`) stored **in this repository** on a dedicated `tfstate` branch. Locking = GitHub Actions `concurrency` group (single maintainer). No external account. |
-| D3 | **Renovate replaces Dependabot** | One grouped weekly PR for every non-major update, auto-merged when CI is green; majors and pinned-hash tools wait for a human. Regex managers cover every `# renovate:` annotation, `==` PyPI pin and `image:tag@digest` (checked with a local `--dry-run=extract`: 54 regex dependencies). |
-| D4 | **k3d** (k3s in Docker) for Kubernetes, locally and in CI | Same distribution as the target self-hosted k3s cluster, with Traefik and local-path storage built in ([k3d](https://k3d.io), [k3s networking](https://docs.k3s.io/networking/networking-services)); its own registry lets Flux reconcile uncommitted changes as an OCI artifact ([Flux OCI cheatsheet](https://fluxcd.io/flux/cheatsheets/oci-artifacts/)). Replaces kind (first choice). |
-| D5 | **Flux** for GitOps | Everything declared in Git; image and chart updates flow through Renovate ([repository structure](https://fluxcd.io/flux/guides/repository-structure/)). |
-| D6 | **Ansible** for the WSL Debian workstation and the cluster bootstrap; `workstation` tested with **Molecule**, cluster roles by the k3d e2e run | Reproducible workstation; every role proven in CI ([Molecule](https://ansible.readthedocs.io/projects/molecule/)). |
-| D7 | Import CI hygiene from `ship-it` / `kiwa` | zizmor + actionlint, dependency-review, commit policy, labels-as-code, `AGENTS.md`. |
-| D8 | **SOPS + age replace Doppler** | Secrets encrypted in Git, readable by OpenTofu ([carlpett/sops provider](https://registry.terraform.io/providers/carlpett/sops/latest/docs)) and Flux ([Flux SOPS guide](https://fluxcd.io/flux/guides/mozilla-sops/)). No external account. |
-| D9 | **No CI bot commits** | terraform-docs runs in a pre-commit hook; CI only checks that docs are current. Every commit on `main` has one signed human author ([ADR 0002](adr/0002-solo-flow.md)). |
-| D10 | **Stacks consume modules by relative path** once HCP Terraform is gone (phase 2) | The `?ref=v1.3.1` git source exists only because HCP uploads `terraform/github/` alone. A relative path removes the release-then-bump step and the stale-module warnings it causes today. |
+| D1 | **Remove the three AI workflows** (issue triage, PR review, changelog) | They call `models.inference.ai.azure.com`; GitHub Models was retired on 2026-07-30 ([summary](https://daily.dev/posts/github-models-is-being-fully-retired-on-july-30-2026-bz8saavyw), [migration guide](https://www.cloudkaramchari.com/blog/github-models-retirement-migration-guide/)). `ai-pr-review` failed 4/4 runs since 2026-11-14. Replaced by deterministic checks. |
+| D2 | **100 % OpenTofu: leave HCP Terraform** | Encrypted state ([OpenTofu state encryption](https://opentofu.org/docs/language/state/encryption), `pbkdf2` + `aes_gcm`) stored **in this repository** on a `tfstate` branch. Locking = GitHub Actions `concurrency` (single maintainer). No external account. |
+| D3 | **Renovate replaces Dependabot** | One grouped weekly PR for every non-major update, auto-merged when green; majors and pinned-hash tools wait for a human. Regex managers cover every `# renovate:` annotation, `==` PyPI pin and `image:tag@digest`. |
+| D4 | **k3d** (k3s in Docker), locally and in CI | Traefik and local-path storage built in ([k3d](https://k3d.io)); its registry lets Flux reconcile uncommitted changes as an OCI artifact ([Flux OCI cheatsheet](https://fluxcd.io/flux/cheatsheets/oci-artifacts/)). Replaces kind. |
+| D5 | **Flux** for GitOps, not ArgoCD | Everything declared in Git, OCI artifacts, image and chart updates through Renovate ([repository structure](https://fluxcd.io/flux/guides/repository-structure/)). One engine is enough. |
+| D6 | **Ansible** for the workstation and the cluster bootstrap; Molecule for `workstation`, `k8s-e2e` for the cluster roles | Reproducible workstation; every role proven in CI ([Molecule](https://ansible.readthedocs.io/projects/molecule/)). |
+| D7 | Import CI hygiene from `ship-it` / `kiwa` | zizmor + actionlint, dependency-review, commit policy, labels as code. |
+| D8 | **SOPS + age replace Doppler**; no Vault or OpenBao | Secrets encrypted in Git, read by OpenTofu ([carlpett/sops provider](https://registry.terraform.io/providers/carlpett/sops/latest/docs)) and Flux ([Flux SOPS guide](https://fluxcd.io/flux/guides/mozilla-sops/)). No service to run, no external account. |
+| D9 | **No CI bot commits** | terraform-docs runs in a pre-commit hook; CI only checks. Every commit on `main` has one signed human author ([ADR 0002](adr/0002-solo-flow.md)). |
+| D10 | **Stacks consume modules by relative path** once HCP Terraform is gone | The `?ref=` git source exists only because HCP uploads `terraform/github/` alone. |
+| D11 | **Local only for now; Talos Linux for the future real cluster**, rehearsed in Docker in CI | No budget. Hetzner raised prices twice in 2026 (CAX11 €4.49 → €5.99/month excl. VAT) and cost-optimized plans were intermittently unavailable ([Northflank](https://northflank.com/blog/hetzner-cloud-server-price-increases), [Bitdoze](https://www.bitdoze.com/hetzner-cloud-cost-optimized-plans/)). Talos is immutable and API-driven, the secure-bootstrap target; latest release v1.14.6 (2026-11-11). |
+| D12 | **Networking = Kubernetes networking**: Cilium (CNI, NetworkPolicies, Hubble, Gateway API) | Real and testable locally and in CI at no cost; a cloud VPC module would never be applied. |
+| D13 | **Observability = LGTM + OpenTelemetry** | The standard stack visitors and recruiters recognise. Replaces the Victoria-stack proposal. |
+| D14 | **Self-service in this repository**: request forms, `run:*` labels on pull requests, `just` menu | Owner-only. Labels rather than `/commands`: only a privileged user can add a label, and zizmor flags `issue_comment` as a dangerous trigger ([zizmor](https://docs.zizmor.sh/audits/#dangerous-triggers)). Commits made locally by `just request`, so the single-author rule holds. |
+| D15 | **Golden paths**: app, repository, OpenTofu module, ephemeral preview environment | Each is a form or command that ends in a reviewed PR. |
+| D16 | **Supply chain**: artifact attestations, cosign-signed OCI artifacts verified by Flux, SBOM + scan, Scorecard ≥ 9 | Every artifact Flux deploys is signed and traceable to its workflow run. |
+| D17 | **Repository split: published modules only** — `terraform-<provider>-<name>` | Registries require that name; an outside consumer is an ADR 0001 criterion. observability-kit and talos-cluster stay folders here. |
+| D18 | **Cost**: requests/limits, lite profile, CI-minutes report, costed ADR; no self-hosted runner | Public repositories run on free GitHub-hosted runners; the self-hosted runner fee announced for March 2026 was postponed ([GitHub changelog](https://github.blog/changelog/2025-12-16-coming-soon-simpler-pricing-and-a-better-experience-for-github-actions/)). A self-hosted runner would only exist while the PC is on. |
+| D19 | **Parked: Cloudflare** (DNS, Tunnel, Access, Pages/R2) | No budget and no public service yet. |
+| D20 | **Workload identity**: short-lived credentials wherever the target allows it | Today CI holds long-lived tokens (HCP, Doppler). Phase 4 inventories them and replaces each one that has a short-lived alternative; the rest is documented with its scope. |
+| D21 | **Zero trust inside the cluster**: default-deny NetworkPolicies, then encrypted service-to-service traffic | Free, local, testable in `k8s-e2e`; no perimeter product needed while nothing is public. |
+| D22 | **Autoscaling**: HPA first, KEDA for event-driven workloads | Built-in and CNCF tooling, demonstrable on the local cluster without a cloud. |
+| D23 | **Parked: homelab, edge, private and hybrid cloud** | No hardware or budget today; the k3d cluster and the Talos rehearsal in CI prepare it. |
 
-| D11 | **Local only for now; Talos Linux for the future real cluster**, run in Docker in CI first | No budget. Hetzner raised prices twice in 2026 (1 April, 15 June; CAX11 €4.49 → €5.99/month excl. VAT) and cost-optimized plans were intermittently unavailable ([Northflank](https://northflank.com/blog/hetzner-cloud-server-price-increases), [Bitdoze](https://www.bitdoze.com/hetzner-cloud-cost-optimized-plans/); Hetzner's own price-adjustment page was removed by November 2026). Talos is immutable and API-driven (no SSH), the secure-bootstrap target; Talos 1.14 ships Kubernetes 1.37 by default, same minor as our k3s (to confirm on the official releases page). |
-| D12 | **Networking = Kubernetes networking**: Cilium (CNI, NetworkPolicies, Hubble, Gateway API) on the Talos cluster | Real, testable locally and in CI at no cost; a cloud VPC module would never be applied. |
-| D13 | **Observability = LGTM + OpenTelemetry**: Prometheus, Loki, Tempo, Grafana, OTel Collector | The standard stack visitors and recruiters recognise. Replaces the Victoria-stack proposal. |
-| D14 | **Self-service in this repo**: issue forms + labels (IssueOps), owner-only `/plan` `/apply` `/e2e` `/docs` PR commands, interactive `just` menu | Audience = the maintainer "later and tired" and read-only visitors. iac is public: every writing workflow checks that the actor is the owner. A separate requests repo only once third parties file requests (ADR 0001 rule: security boundary). |
-| D15 | **Golden paths**, in order: new app on the cluster, new GitHub repo, new OpenTofu module, ephemeral `/preview` environment | Each is a form or command that ends in a reviewed PR. |
-| D16 | **Supply chain**: GitHub artifact attestations, cosign-signed OCI artifacts verified by Flux, SBOM + scan, OpenSSF Scorecard ≥ 9 | Every artifact Flux deploys is signed and traceable to its workflow run. |
-| D17 | **Repository split: modules only** — one `terraform-<provider>-<name>` repo per published module | Registries require that name; an outside consumer is an ADR 0001 criterion. observability-kit and talos-cluster stay folders here (publishable as OCI artifacts). |
-| D18 | **Cost**: requests/limits everywhere + lite cluster profile, weekly CI-minutes report, a costed ADR for the paid scenario; OpenCost only with a paid cluster | Public repos run on free GitHub-hosted runners; the self-hosted runner fee announced for March 2026 was postponed ([GitHub changelog](https://github.blog/changelog/2025-12-16-coming-soon-simpler-pricing-and-a-better-experience-for-github-actions/)). No self-hosted runner: it would only exist while the PC is on. |
-| D19 | **Parked: Cloudflare** (DNS, Tunnel, Access, Pages/R2) | No budget and no need yet; revisit with the first public service. |
+Honest limit: a cluster on the PC only runs **while the PC is on**. Anything that must run 24/7 (Renovate, plans, scans) stays in GitHub Actions, free for public repositories.
 
-Honest limit: a cluster on the PC only runs **while the PC is on**. Anything that must run 24/7 (Renovate, plans, scans) stays in GitHub Actions, which is free for public repositories.
+## See also
 
-## Versions (latest on 2026-11-19/20)
-
-| Tool | Before | Now |
-|---|---|---|
-| OpenTofu | 1.12.0 (`required_version >= 1.9`) | **1.13.9** (`>= 1.13`) — [1.13 notes](https://opentofu.org/blog/opentofu-1-13-0/) |
-| integrations/github provider | `~> 6.0` | `~> 6.13` (v6.13.0) |
-| DopplerHQ/doppler provider | `~> 1.0` | `~> 1.23` — removed with D8 |
-| hashicorp/tfe provider | `~> 0.60` | `~> 0.84` — removed with D2 |
-| Go | 1.23 (mise, go.mod) / 1.26.3 (devcontainer) | **1.27.4** everywhere |
-| Terratest | 0.47.2 | v2 (`modules/core/v2.0.0`) — import paths to check before bumping |
-| testify | 1.9.0 | 1.12.1 |
-| tenv / tflint / terraform-docs | 4.12.2 / 0.62.1 / 0.24.0 | 4.16.9 / 0.66.0 / 0.25.1 |
-| Trivy / Checkov | 0.70.0 / 3.2.529 | 0.76.2 / 3.4.5 |
-| pre-commit / pre-commit-hooks / conventional-pre-commit | 4.6.0 / v5.0.0 / v3.4.0 | 4.7.0 / v6.0.0 / v4.5.0 |
-| actions/checkout | v6.0.2 | v7.0.1 (every workflow, SHA-pinned) |
-| k3d / k3s | — | v5.9.0 / v1.37.2+k3s1 |
-| kubectl / Flux / Helm | — | v1.37.2 / v2.10.0 / v4.3.2 |
-| ansible-core / molecule / ansible-lint | — | 2.22.0 / 26.11.0 / 26.11.0 |
-| OPA / Conftest / Kyverno / kubeconform | — | 1.22.4 / 0.71.1 / 1.20.0 / 0.8.0 |
-| zizmor / actionlint | — | 1.32.0 / 1.7.12 |
-| SOPS / age | — | v3.13.3 / v1.3.2 |
-
-## Layout
-
-```text
-terraform/            OpenTofu stacks (github, doppler) — state encrypted on branch tfstate (phase 2)
-modules/              reusable OpenTofu modules (+ tofu test, terraform-docs)
-policies/
-  opentofu/           OPA/Rego rules on the plan JSON (+ opa test)
-  kubernetes/         Kyverno ValidatingPolicies (CEL) on rendered manifests
-ansible/
-  inventories/        local.yml
-  playbooks/          workstation.yml, cluster.yml
-  roles/              workstation (+ molecule/), k3d_cluster, flux_bootstrap
-kubernetes/           Flux layout
-  clusters/local/     entry point reconciled by Flux (OCI artifact from the k3d registry)
-  infrastructure/     namespaces (Pod Security), then controllers + observability
-  apps/               podinfo (demo), then self-hosted services and your apps
-scripts/              wsl/new-distro.ps1, check-commit-msg.sh, check-manifests.sh, terraform-docs.sh
-docs/                 ROADMAP, ARCHITECTURE, ADRs
-```
-
-## Quality gates
-
-`just check` runs the same commands as CI, inside the `iac` WSL distribution:
-
-| Gate | Local | CI |
-|---|---|---|
-| tofu fmt / validate / tflint / tofu test | `just fmt-check validate lint test` | `tofu-test.yml`, `_tofu-plan.yml` |
-| OPA unit tests | `just policy` | `policy.yml` |
-| kubeconform + Kyverno on rendered overlays | `just k8s` → `scripts/check-manifests.sh` | `policy.yml` (same script) |
-| ansible-lint (production) / Molecule | `just ansible-lint` / `just molecule` | `ansible.yml` (Molecule with **every** binary) |
-| actionlint + zizmor | `just gha` | `zizmor.yml` |
-| Trivy + Checkov | `just security` | `security-scan.yml` |
-| module docs current | pre-commit hook / `just docs-check` | `docs.yml` (check only) |
-| commit policy (no co-author trailer, DCO) | commit-msg hook / `just commits` | `commit-policy.yml` |
-| k3d + Flux end to end | `just up` (or `just check-all`) | `k8s-e2e.yml` |
-
-## Phases
-
-1. **Upgrade & autopilot** — done on `feat/platform-next`
-   - every pin above bumped; Go and OpenTofu aligned everywhere
-   - AI workflows and scripts deleted (D1); Dependabot → Renovate (D3)
-   - zizmor + actionlint, dependency-review, commit policy, policy-as-code workflows (D7)
-   - zizmor findings fixed in the existing workflows: no template injection, no persisted credentials, no `secrets: inherit`
-2. **State migration** (D2, D10): encrypted local backend, `tfstate` branch, plan/apply workflows rewritten, `tfe` removed, modules by relative path. Needs a passphrase secret (`TF_ENCRYPTION_PASSPHRASE`, kept SOPS-encrypted in the repo too).
-3. **Ansible** — done: WSL distro bootstrap (`scripts/wsl/new-distro.ps1`), `workstation` role (checksum-verified downloads, idempotent), Molecule in CI.
-4. **Kubernetes + Flux** — done: `k3d_cluster` + `flux_bootstrap` roles, `kubernetes/` tree, `k8s-e2e.yml`. Verified locally: every Kustomization Ready, podinfo running under the `restricted` Pod Security Standard.
-5. **Self-service** (D14) — built: four request forms validated by `requests.yml` and turned into signed pull requests by `just request <n>`; `run:plan`, `run:e2e`, `run:check` labels (labels instead of `/commands`: zizmor flags `issue_comment`); `just` opens an fzf menu; the WSL distribution signs with its own key ([guide](how-to/self-service.md)).
-6. **Secrets & supply chain** (D8, D16): SOPS + age (OpenTofu, Flux), GitHub OIDC in CI, attestations, cosign + Flux verification, SBOM, Scorecard ≥ 9; Doppler stack retired.
-7. **Observability** (D13): LGTM + OTel Collector, lite profile for the PC; then Gatus (status), Garage (S3), cert-manager; Longhorn only on real nodes (needs `open-iscsi` on the host, unavailable in k3d).
-8. **Talos + Cilium** (D11, D12): machine config as code, Talos-in-Docker cluster in CI with the same Flux tree.
-9. **Golden paths** (D15) and the **modules split** (D17).
-10. **Docs & showcase** — docs done: [Diátaxis](https://diataxis.fr) structure, Mermaid diagrams, per-folder READMEs, README rewritten, `docs-quality.yml` (markdownlint, typos, lychee, every diagram rendered). Next: Starlight site on GitHub Pages with live status (CI, versions, DORA), `examples/`, `AGENTS.md`.
-
-Still to verify with sources before building: OpenBao status (kept out per D8 anyway), current Cloudflare provider major (D19), IssueOps reference implementations (D14).
-
-## Needed from the maintainer (one-time)
-
-- Install the Renovate GitHub App on the repository (free) — or decide on self-hosted Renovate in Actions.
-- Generate the state passphrase (phase 2) and an age key (phase 5).
+- Current tool versions and where they are pinned: [Toolchain](reference/toolchain.md)
+- Repository layout: [Layout](reference/layout.md) · every gate: [Commands](reference/commands.md) · [Workflows](reference/workflows.md)
+- Architecture decision records: [ADRs](adr/README.md)

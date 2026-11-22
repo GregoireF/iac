@@ -28,7 +28,7 @@ Rego v1, package `main` (the Conftest default), evaluated on the JSON plan.
 Tested by `policies/opentofu/github_test.rego` (8 cases): `just policy`, CI `policy.yml`.
 
 > Status: unit-tested on every change. Enforcement on the real plan needs a saved plan (`tofu plan -out`),
-> which the current HCP Terraform remote execution does not provide; it lands with phase 2 of the
+> which the current HCP Terraform remote execution does not provide; it lands with phase 4 of the
 > [roadmap](../ROADMAP.md).
 
 ## Kubernetes — `policies/kubernetes/baseline.yaml`
