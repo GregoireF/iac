@@ -1,71 +1,57 @@
 # GitHub Copilot instructions — iac
 
-This repository is an Infrastructure as Code (IaC) engineering lab managed with **OpenTofu**.
-
----
+A one-maintainer platform as code: OpenTofu for GitHub, Ansible for the workstation and cluster bootstrap,
+Flux for Kubernetes, OPA and Kyverno for policies. Read [docs/README.md](../docs/README.md) first.
 
 ## Stack
 
-- **IaC engine**: OpenTofu >= 1.9, pinned to 1.12.0 locally via `.opentofu-version` (NOT Terraform — use `tofu` CLI)
-- **State backend**: HCP Terraform (remote execution mode, org `gregoiref`)
-- **Auth**: GitHub App (ephemeral tokens via `app_auth {}` block)
-- **CI/CD**: GitHub Actions
-- **Secrets management**: Doppler — CI service tokens synced to GitHub Actions secrets (`DOPPLER_TOKEN`)
-
----
+- **IaC engine**: OpenTofu `>= 1.13`, version in `.opentofu-version` — use the `tofu` CLI, never `terraform`
+- **State backend**: HCP Terraform (remote execution, organisation `gregoiref`) until phase 2 of `docs/ROADMAP.md`
+- **Auth**: GitHub App (ephemeral tokens via the `app_auth {}` block)
+- **Workstation**: WSL distribution `iac` built by `scripts/wsl/new-distro.ps1` and `ansible/`
+- **Kubernetes**: k3d (k3s) + Flux 2.10, `kubernetes/` pushed as an OCI artifact
+- **Secrets**: Doppler today, SOPS + age decided (roadmap D8)
 
 ## Project structure
 
+```text
+terraform/<stack>/          one OpenTofu root module per provider (github, doppler)
+modules/<provider>/<name>/  reusable modules, with tests/ and a terraform-docs README
+ansible/                    playbooks and roles (workstation, k3d_cluster, flux_bootstrap)
+kubernetes/                 Flux layout: clusters/, infrastructure/, apps/
+policies/                   OPA (plans) and Kyverno (manifests)
+scripts/                    checks shared by just and CI
+.github/workflows/          <engine>-<provider>-<action>.yml for stacks
 ```
-terraform/<provider>/   ← one stack per provider (github, cloudflare, hetzner...)
-modules/<provider>/<name>/  ← reusable modules
-.github/workflows/      ← naming: <engine>-<provider>-<action>.yml
-.github/scripts/        ← Python automation scripts (stdlib only, no pip)
-```
-
----
 
 ## OpenTofu conventions
 
-- Use `tofu` CLI, not `terraform`
-- Always set `required_version = ">= 1.9"` in `terraform {}` block
-- Pin provider versions with `~>` (minor-compatible within major): `version = "~> 6.0"`
-- Pin module git sources to an immutable version tag: `ref=v1.0.0` — never `ref=main`
-- After bumping `modules/github/repository`, run the `release` workflow to create a new tag, then open a PR to update `refs` in `terraform/github/repos.tf`
-- Format with `tofu fmt` before committing
-- Use `for_each` over `count` for named resources
-- Use `locals {}` as the single source of truth for resource definitions
-- Never use `count` on modules — use `for_each = { key = config }`
-- Add `prevent_destroy = true` on any resource that would be catastrophic to lose
-- Mark sensitive variables with `sensitive = true`
-- Use `dynamic` blocks for optional rule groups
+- `required_version = ">= 1.13"`; providers pinned with `~>`: `version = "~> 6.13"`
+- Lock files for `linux_amd64`, `linux_arm64`, `darwin_arm64`, `windows_amd64`; none inside `modules/`
+- Module git sources pinned to an immutable tag (`ref=vX.Y.Z`), never `ref=main`
+- `for_each` over `count` for named resources; `locals {}` as the single source of truth
+- `prevent_destroy` on anything catastrophic to lose; `sensitive = true` on secrets
+- Every module change comes with a `tofu test` case (`mock_provider`, no API calls)
 
 ## Security rules
 
-- Never commit secrets, tokens, PEM keys, or `.tfvars` files
-- Sensitive values live in HCP Terraform workspace variables only
-- Dependabot vulnerability alerts on every active repository via `github_repository_vulnerability_alerts` (the `vulnerability_alerts` argument is deprecated since provider 6.13)
-- Validate `visibility` before applying (public repos are public)
-
-## Naming conventions
-
-- Terraform resource keys: `snake_case`
-- Module source paths: `../../modules/<provider>/<name>`
-- Locals map keys: `snake_case` matching the actual resource name (e.g., repo name)
-- Label composite keys: `"<repo>:<label>"` format for flattened for_each
-
-## Python scripts (.github/scripts/)
-
-- Standard library only — no `pip install`, no `requirements.txt`
-- Use `urllib.request` for HTTP, `json` for parsing
-- Use environment variables for all external config (never hardcode)
+- Never commit secrets, tokens, PEM keys or `.tfvars`
+- Vulnerability alerts on every active repository through `github_repository_vulnerability_alerts`
+  (the `vulnerability_alerts` argument is deprecated since provider 6.12)
+- Check `visibility` before applying: public repositories are public
 
 ## GitHub Actions
 
-- Workflow filename: `<engine>-<provider>-<action>.yml`
-- Always set `concurrency` to prevent parallel conflicting runs
-- `cancel-in-progress: false` on apply/destructive jobs
-- Use `permissions` minimal scope (principle of least privilege)
-- Path filters on `on.push.paths` / `on.pull_request.paths` to avoid unnecessary runs
-- Exception: security-scan has NO path filter on `pull_request` — it must run on every PR for OSSF Scorecard SASTID compliance
-- Required GitHub Actions variable: `TF_DOPPLER_WORKSPACE_ID` — workspace ID for the doppler HCP Terraform workspace
+- Actions pinned by full commit SHA with a version comment; `actions/checkout` with `persist-credentials: false`
+- Inputs and expressions reach shells through `env:`, never `${{ }}` inside `run:`
+- Explicit secrets for reusable workflows, never `secrets: inherit`
+- `concurrency` on every workflow; `cancel-in-progress: false` on applies
+- Least-privilege `permissions`; path filters on `push` and `pull_request`
+- Exception: `security-scan` has no path filter on `pull_request` (OpenSSF Scorecard SAST check)
+- Tool versions carry a `# renovate:` comment
+
+## Commits
+
+- Conventional Commits, lower-case subject; `git commit -s`; SSH-signed
+- One human author: no `Co-authored-by`, `Generated-by` or `Assisted-by` trailer, no "Generated with" footer
+- Run `just check` before pushing; it mirrors CI

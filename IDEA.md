@@ -2,14 +2,14 @@
 
 ---
 
-# Vision
+## Vision
 
 Build a modern:
 > infrastructure engineering laboratory.
 
 ---
 
-# Core Goals
+## Core Goals
 
 - experiment
 - automate
@@ -18,13 +18,14 @@ Build a modern:
 
 ---
 
-# Main Directions
+## Main Directions
 
 ---
 
-# 1. Terraform Modules
+## 1. Terraform Modules
 
 Potential modules:
+
 - VPC/networking
 - Kubernetes
 - Cloudflare
@@ -34,9 +35,10 @@ Potential modules:
 
 ---
 
-# 2. Kubernetes & Talos
+## 2. Kubernetes & Talos
 
 Explore:
+
 - Talos Linux
 - GitOps
 - ArgoCD
@@ -45,9 +47,10 @@ Explore:
 
 ---
 
-# 3. Platform Engineering
+## 3. Platform Engineering
 
 Create reusable:
+
 - golden paths
 - infrastructure templates
 - developer platforms
@@ -55,9 +58,10 @@ Create reusable:
 
 ---
 
-# 4. Observability
+## 4. Observability
 
 Potential stacks:
+
 - Prometheus
 - Loki
 - Grafana
@@ -65,9 +69,10 @@ Potential stacks:
 
 ---
 
-# 5. Self-Hosting
+## 5. Self-Hosting
 
 Potential experiments:
+
 - homelab
 - edge infrastructure
 - private cloud
@@ -75,9 +80,10 @@ Potential experiments:
 
 ---
 
-# 6. CI/CD & Automation
+## 6. CI/CD & Automation
 
 Potential tooling:
+
 - GitHub Actions
 - reusable workflows
 - release automation
@@ -85,9 +91,10 @@ Potential tooling:
 
 ---
 
-# 7. Security & Compliance
+## 7. Security & Compliance
 
 Topics:
+
 - secrets management
 - zero-trust networking
 - supply-chain security
@@ -98,9 +105,10 @@ Topics:
 
 ---
 
-# 8. Cost Optimization
+## 8. Cost Optimization
 
 Potential experiments:
+
 - Hetzner
 - spot instances
 - autoscaling
@@ -108,9 +116,10 @@ Potential experiments:
 
 ---
 
-# 9. Future Ecosystem
+## 9. Future Ecosystem
 
 Potential future repos:
+
 - observability-kit
 - terraform-modules
 - homelab
@@ -119,9 +128,10 @@ Potential future repos:
 
 ---
 
-# Philosophy
+## Philosophy
 
 Infrastructure should be:
+
 - versioned
 - automated
 - testable
@@ -129,7 +139,7 @@ Infrastructure should be:
 
 ---
 
-# Long-Term Goal
+## Long-Term Goal
 
 Transform this repository into:
 > a curated collection of modern infrastructure engineering patterns.

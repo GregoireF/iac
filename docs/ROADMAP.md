@@ -4,6 +4,49 @@
 
 Snapshot: 2026-11-20. Versions were read from upstream release APIs on 2026-11-19/20; after that, Renovate owns them.
 
+## At a glance
+
+No dates are promised: phases are ordered, and each one starts when the previous is green.
+
+```mermaid
+timeline
+  title Phases by status
+  section Done
+    1 Upgrade and autopilot : Renovate, CI hardening, policy-as-code
+    3 Ansible : WSL distro, workstation role, Molecule
+    4 Kubernetes and Flux : k3d, OCI artifact, k8s-e2e
+    Docs : Diátaxis, Mermaid, docs quality gates
+  section Next
+    2 State migration : encrypted state in the repo, no HCP
+    5 Self-service : issue forms, labels, PR commands, just menu
+    6 Secrets and supply chain : SOPS and age, attestations, cosign
+  section Later
+    7 Observability : LGTM and OpenTelemetry
+    8 Talos and Cilium : in Docker, in CI
+    9 Golden paths : templates, module repositories
+    10 Showcase : docs site, live status, DORA
+```
+
+What replaces what:
+
+```mermaid
+flowchart LR
+  ai["AI workflows<br/>GitHub Models, retired"] -->|D1| det["deterministic checks"]
+  hcp["HCP Terraform state"] -->|D2| enc["OpenTofu-encrypted state<br/>in this repository"]
+  dep["Dependabot + auto-merge"] -->|D3| ren["Renovate<br/>one weekly PR"]
+  kind["kind"] -->|D4| k3d["k3d / k3s"]
+  dop["Doppler"] -->|D8| sops["SOPS + age"]
+  bot["docs bot commits"] -->|D9| hook["pre-commit hook<br/>CI check only"]
+  ref["module ?ref= tags"] -->|D10| rel["relative module path"]
+  vic["Victoria stack (proposal)"] -->|D13| lgtm["LGTM + OpenTelemetry"]
+  classDef done fill:#e6f4ea,stroke:#34a853
+  classDef todo fill:#fef7e0,stroke:#f9ab00
+  class det,ren,k3d,hook done
+  class enc,sops,rel,lgtm todo
+```
+
+Green: in place. Amber: decided, not built yet.
+
 ## Decisions
 
 | # | Decision | Why |
@@ -19,7 +62,7 @@ Snapshot: 2026-11-20. Versions were read from upstream release APIs on 2026-11-1
 | D9 | **No CI bot commits** | terraform-docs runs in a pre-commit hook; CI only checks that docs are current. Every commit on `main` has one signed human author ([ADR 0002](adr/0002-solo-flow.md)). |
 | D10 | **Stacks consume modules by relative path** once HCP Terraform is gone (phase 2) | The `?ref=v1.3.1` git source exists only because HCP uploads `terraform/github/` alone. A relative path removes the release-then-bump step and the stale-module warnings it causes today. |
 
-| D11 | **Local only for now; Talos Linux for the future real cluster**, run in Docker in CI first | No budget. Hetzner raised prices twice in 2026 (1 April, 15 June; CAX11 €4.49 → €5.99/month excl. VAT) and cost-optimized plans were intermittently unavailable ([Hetzner](https://docs.hetzner.com/general/infrastructure-and-availability/price-adjustment/), [Northflank](https://northflank.com/blog/hetzner-cloud-server-price-increases), [Bitdoze](https://www.bitdoze.com/hetzner-cloud-cost-optimized-plans/)). Talos is immutable and API-driven (no SSH), the secure-bootstrap target; Talos 1.14 ships Kubernetes 1.37 by default, same minor as our k3s (to confirm on the official releases page). |
+| D11 | **Local only for now; Talos Linux for the future real cluster**, run in Docker in CI first | No budget. Hetzner raised prices twice in 2026 (1 April, 15 June; CAX11 €4.49 → €5.99/month excl. VAT) and cost-optimized plans were intermittently unavailable ([Northflank](https://northflank.com/blog/hetzner-cloud-server-price-increases), [Bitdoze](https://www.bitdoze.com/hetzner-cloud-cost-optimized-plans/); Hetzner's own price-adjustment page was removed by November 2026). Talos is immutable and API-driven (no SSH), the secure-bootstrap target; Talos 1.14 ships Kubernetes 1.37 by default, same minor as our k3s (to confirm on the official releases page). |
 | D12 | **Networking = Kubernetes networking**: Cilium (CNI, NetworkPolicies, Hubble, Gateway API) on the Talos cluster | Real, testable locally and in CI at no cost; a cloud VPC module would never be applied. |
 | D13 | **Observability = LGTM + OpenTelemetry**: Prometheus, Loki, Tempo, Grafana, OTel Collector | The standard stack visitors and recruiters recognise. Replaces the Victoria-stack proposal. |
 | D14 | **Self-service in this repo**: issue forms + labels (IssueOps), owner-only `/plan` `/apply` `/e2e` `/docs` PR commands, interactive `just` menu | Audience = the maintainer "later and tired" and read-only visitors. iac is public: every writing workflow checks that the actor is the owner. A separate requests repo only once third parties file requests (ADR 0001 rule: security boundary). |
@@ -55,7 +98,7 @@ Honest limit: a cluster on the PC only runs **while the PC is on**. Anything tha
 
 ## Layout
 
-```
+```text
 terraform/            OpenTofu stacks (github, doppler) — state encrypted on branch tfstate (phase 2)
 modules/              reusable OpenTofu modules (+ tofu test, terraform-docs)
 policies/
@@ -104,7 +147,7 @@ docs/                 ROADMAP, ARCHITECTURE, ADRs
 7. **Observability** (D13): LGTM + OTel Collector, lite profile for the PC; then Gatus (status), Garage (S3), cert-manager; Longhorn only on real nodes (needs `open-iscsi` on the host, unavailable in k3d).
 8. **Talos + Cilium** (D11, D12): machine config as code, Talos-in-Docker cluster in CI with the same Flux tree.
 9. **Golden paths** (D15) and the **modules split** (D17).
-10. **Docs & showcase**: Starlight site on GitHub Pages with live status (CI, versions, DORA), runbooks, per-folder READMEs + `examples/`, `AGENTS.md`, README rewritten around the new stack.
+10. **Docs & showcase** — docs done: [Diátaxis](https://diataxis.fr) structure, Mermaid diagrams, per-folder READMEs, README rewritten, `docs-quality.yml` (markdownlint, typos, lychee, every diagram rendered). Next: Starlight site on GitHub Pages with live status (CI, versions, DORA), `examples/`, `AGENTS.md`.
 
 Still to verify with sources before building: OpenBao status (kept out per D8 anyway), current Cloudflare provider major (D19), IssueOps reference implementations (D14).
 

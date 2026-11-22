@@ -1,73 +1,48 @@
 # Contributing
 
-## Prerequisites
+This is a one-maintainer repository; the rules below keep its history clean and its checks honest.
+The why is in [ADR 0002 — solo flow](docs/adr/0002-solo-flow.md).
 
-| Tool | Install |
-|------|---------|
-| [tenv](https://github.com/tofuutils/tenv) | `brew install tenv` / [releases](https://github.com/tofuutils/tenv/releases) |
-| [pre-commit](https://pre-commit.com) | `pip install pre-commit` |
-| [Node.js](https://nodejs.org) ≥ 18 | for commitlint |
+## Set up
 
-```bash
-# Install the OpenTofu version declared in .opentofu-version
-tenv tofu install
+Follow [Getting started](docs/tutorials/getting-started.md): one command builds the `iac` WSL distribution
+with every tool, then `just setup` installs the git hooks.
 
-# Install git hooks (commitlint, tflint, trivy, checkov…)
-pre-commit install --hook-type commit-msg --hook-type pre-commit
+## Make a change
+
+```mermaid
+flowchart LR
+  branch["branch or main"] --> work["change"] --> check["just check<br/>(+ just docs-lint for docs)"]
+  check --> commit["git commit -s<br/>SSH-signed"] --> push["push"]
+  push --> pr{"infrastructure change?"}
+  pr -- yes --> review["pull request<br/>read the plan"] --> merge["fast-forward main"]
+  pr -- no --> ci["CI on main"]
 ```
 
-## Commit format
+1. Small batches: one topic per commit.
+2. `just check` green before any push — it runs the same commands as CI.
+3. Infrastructure changes (`terraform/`, `modules/`) go through a pull request so the plan is read before
+   the apply on `main`.
 
-This repo enforces [Conventional Commits](https://www.conventionalcommits.org/):
+## Commits
 
-```
-<type>(<scope>): <short summary>
-```
+- [Conventional Commits](https://www.conventionalcommits.org/), subject in lower case:
+  `feat(policy): add a Kyverno rule for …`.
+- **Signed** (SSH, `commit.gpgsign=true`) and **signed off** (`git commit -s`, [DCO](https://developercertificate.org/)).
+- **One human author**: no `Co-authored-by`, `Generated-by` or `Assisted-by` trailer and no
+  "Generated with …" footer. The commit-msg hook and `commit-policy.yml` enforce it; `just commits` checks a branch.
 
-Common types: `feat`, `fix`, `chore`, `docs`, `refactor`, `ci`, `test`.
+## Merging
 
-Examples:
-```
-feat(github): add addlicense repository
-fix(doppler): use nonsensitive() per-value in ci_tokens output
-chore(deps): bump checkov to 3.2.530
-```
+Fast-forward `main` to the reviewed branch (`git push origin <branch>:main`) so commits keep their own
+signatures; a web "rebase and merge" re-creates them as GitHub commits.
 
-## Workflow
+## Docs
 
-1. Branch from `main` — `feat/<topic>` or `fix/<topic>`
-2. Write code; hooks run on every commit
-3. Open a PR — Commitlint, Trivy, Checkov, and OpenTofu plan run automatically
-4. Squash-merge after one approval
-
-## Stack layout
-
-```
-terraform/
-  github/   — GitHub repos, branch protection, secrets (HCP workspace: github)
-  doppler/  — Doppler projects and CI service tokens  (HCP workspace: doppler)
-modules/
-  github/repository/  — reusable module called by terraform/github
-```
-
-## HCP Terraform
-
-Applies run remotely on [app.terraform.io](https://app.terraform.io) under the `gregoiref` organisation. Workspace variables (tokens, secrets) must be set there — never committed to git.
-
-Required workspace variables:
-
-| Workspace | Variable | Description |
-|-----------|----------|-------------|
-| `github`  | `GITHUB_TOKEN` | PAT with repo + admin scopes |
-| `doppler` | `DOPPLER_TOKEN` | Doppler service token |
-| `github`  | `TF_API_TOKEN` | HCP Terraform API token (for curl pre-step) |
-
-Required GitHub repository variables:
-
-| Variable | Description |
-|----------|-------------|
-| `TF_DOPPLER_WORKSPACE_ID` | HCP Terraform workspace ID for the doppler workspace |
+Pages follow [Diátaxis](https://diataxis.fr) under `docs/`; diagrams are Mermaid. `just docs-lint` must pass
+(markdownlint, typos, links, every diagram renders).
 
 ## Skipping hooks
 
-Pre-commit hooks can be bypassed with `SKIP=<hook-id> git commit …` for a specific hook, or `git commit --no-verify` to skip all (use sparingly — CI enforces the same checks).
+`SKIP=<hook-id> git commit …` skips one hook. CI runs the same checks, so a skipped hook only moves the
+failure later.

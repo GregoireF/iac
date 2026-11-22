@@ -1,6 +1,6 @@
 # ADR 0001 — Repository layout: split only when a rule says so
 
-- Status: proposed (2026-11-20)
+- Status: accepted (2026-11-20)
 - Context: one maintainer, zero budget, goal = minimum friction (few PRs, few releases, fast local checks).
 
 ## Rule
@@ -20,13 +20,14 @@ Otherwise it stays in `iac`. Each extra repository costs: its own CI, Renovate P
 |---|---|---|
 | OpenTofu stacks + modules, Ansible, Kubernetes (Flux), policies, docs site | **`iac`** | none of 1–4: one platform, changed together, tested together (`just check`, k8s-e2e) |
 | Reusable CI/CD workflows + composite actions for **all** repos (lint, release, deploy) | **new `workflows` repo** (created and governed by `iac`) | **1** — `ship-it`, `kiwa`, `addlicense`, `utils`… pin `@v1`; **3** — workflow releases must not follow every infra change |
-| OpenTofu modules published on the OpenTofu Registry | **stay in `iac` for now** | Registry naming (`terraform-<provider>-<name>` per module repo) would satisfy 1, but there is a single consumer today. Revisit when a module is reused outside `iac` (trigger documented in the ROADMAP). |
+| OpenTofu modules published on a registry | **one `terraform-<provider>-<name>` repository per published module** (amended 2026-11-20, ROADMAP D17) | **1** — a registry requires that repository name, and publishing makes outside consumers possible. Modules not meant for publication stay in `iac`. |
+| Observability kit, Talos cluster | **folders in `iac`**, publishable as OCI artifacts | none of 1–4 yet (ROADMAP D17) |
 | Org-wide community files (`GregoireF/.github`) | keep the existing (empty) repo for GitHub's special-purpose role only | GitHub reads default community files from it; not a place for code |
 
 Rejected:
 
 - **Separate GitOps repo** for `kubernetes/`: no different consumer or boundary; it would double PRs for changes that span Ansible + manifests.
-- **One repo per module**: release overhead without a second consumer.
+- **One repo per module, for every module**: release overhead for modules nobody else consumes; only published modules get their own repository.
 - **Workflows inside `iac`**: every consumer would pin `iac@vX`, and every infra release would bump workflow versions in every repo (rule 3).
 
 ## Consequences
