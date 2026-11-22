@@ -1,25 +1,10 @@
-<!-- BEGIN_TF_DOCS -->
-## Requirements
+# modules/github
 
-No requirements.
+OpenTofu modules for GitHub.
 
-## Providers
+| Module | Purpose |
+|---|---|
+| [`repository`](repository/README.md) | One repository with its settings, default-branch ruleset, environments, deploy keys, vulnerability alerts and standard files |
 
-No providers.
-
-## Modules
-
-No modules.
-
-## Resources
-
-No resources.
-
-## Inputs
-
-No inputs.
-
-## Outputs
-
-No outputs.
-<!-- END_TF_DOCS -->
+Consumed by `terraform/github/repos.tf` through an immutable git tag; see
+[Release the module](../../docs/how-to/release-the-module.md).

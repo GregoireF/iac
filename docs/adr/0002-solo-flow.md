@@ -1,6 +1,6 @@
 # ADR 0002 — Solo flow: local-first, trunk-based, robots for the rest
 
-- Status: proposed (2026-11-20)
+- Status: accepted (2026-11-20)
 - References: *The DevOps Handbook* (Kim, Humble, Debois, Willis, Forsgren) — the "Three Ways": flow, fast feedback, continual learning; *Accelerate* / DORA metrics (deployment frequency, lead time for changes, change failure rate, time to restore).
 
 ## Decision

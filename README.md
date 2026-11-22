@@ -1,383 +1,85 @@
 # iac
 
-> Agency-level Infrastructure as Code — GitHub automation, secrets management,
-> and self-updating CI (Renovate, zizmor, Trivy, Checkov), fully managed with OpenTofu.
+> A one-person platform, fully as code: GitHub governed by OpenTofu, a reproducible workstation built by Ansible,
+> a Kubernetes cluster reconciled by Flux, and every change gated by policy-as-code — local first, zero budget.
 
-[![OpenTofu Plan](https://github.com/GregoireF/iac/actions/workflows/tofu-github-plan.yml/badge.svg)](https://github.com/GregoireF/iac/actions/workflows/tofu-github-plan.yml)
-[![Security Scan](https://github.com/GregoireF/iac/actions/workflows/security-scan.yml/badge.svg)](https://github.com/GregoireF/iac/actions/workflows/security-scan.yml)
-[![Unit Tests](https://github.com/GregoireF/iac/actions/workflows/tofu-test.yml/badge.svg)](https://github.com/GregoireF/iac/actions/workflows/tofu-test.yml)
+[![k8s-e2e](https://github.com/GregoireF/iac/actions/workflows/k8s-e2e.yml/badge.svg)](https://github.com/GregoireF/iac/actions/workflows/k8s-e2e.yml)
+[![policy](https://github.com/GregoireF/iac/actions/workflows/policy.yml/badge.svg)](https://github.com/GregoireF/iac/actions/workflows/policy.yml)
+[![ansible](https://github.com/GregoireF/iac/actions/workflows/ansible.yml/badge.svg)](https://github.com/GregoireF/iac/actions/workflows/ansible.yml)
+[![opentofu test](https://github.com/GregoireF/iac/actions/workflows/tofu-test.yml/badge.svg)](https://github.com/GregoireF/iac/actions/workflows/tofu-test.yml)
+[![security scan](https://github.com/GregoireF/iac/actions/workflows/security-scan.yml/badge.svg)](https://github.com/GregoireF/iac/actions/workflows/security-scan.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/GregoireF/iac/badge)](https://securityscorecards.dev/viewer/?uri=github.com/GregoireF/iac)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![OpenTofu](https://img.shields.io/badge/OpenTofu-%3E%3D1.13-7b2d8b)](https://opentofu.org)
 
----
+## In 30 seconds
+
+- **GitHub as code** — 14 repositories (rulesets, labels, environments, secrets, files) managed by one OpenTofu module, tested with `tofu test` and guarded by OPA policies on the plan.
+- **Reproducible workstation** — one PowerShell command builds a dedicated WSL distribution; Ansible installs ~20 tools, each from its official release and checksum-verified.
+- **GitOps cluster** — k3d (k3s) with Flux, which reconciles this repository's `kubernetes/` tree pushed as an OCI artifact: uncommitted manifests are proven on a real cluster.
+- **Same gates everywhere** — `just check` runs exactly what CI runs: format, lint, unit tests, OPA, kubeconform + Kyverno, ansible-lint, workflow security audit, IaC scanners, docs checks.
+- **Autopilot** — Renovate opens one grouped PR a week and merges it when everything is green; Molecule installs every bumped tool before that merge.
+
+```mermaid
+flowchart LR
+  dev(["Maintainer"]) -->|"just check"| local["WSL distro 'iac'<br/>same tools as CI"]
+  dev -->|"signed commit"| gh["GitHub"]
+  gh --> ci{"CI gates<br/>lint · tests · policies · e2e"}
+  ci -->|"plan → apply"| repos[("14 GitHub repositories")]
+  ci -->|"k3d + Flux"| cluster["Kubernetes<br/>(local and CI)"]
+  renovate(["Renovate · weekly"]) -->|"one grouped PR"| gh
+  local -->|"flux push artifact"| cluster
+```
 
 ## Stack
 
-| Layer | Tool | Purpose |
-|---|---|---|
-| IaC engine | [OpenTofu](https://opentofu.org) `>= 1.13` | Plan + apply all infrastructure |
-| Remote backend | [HCP Terraform](https://app.terraform.io) | Remote execution, encrypted state, workspace secrets |
-| Auth | GitHub App (ephemeral tokens) | Scoped GitHub API access — no long-lived PATs |
-| Secrets | [Doppler](https://doppler.com) | Project-level secrets synced across all repos |
-| CI/CD | GitHub Actions | Automated plan on PR, apply on merge |
-| Scanning | Trivy + Checkov + OSSF Scorecard | IaC misconfig, policy enforcement, supply-chain scoring |
-| Testing | `tofu test` (mock) + Terratest (integration) | Unit + real-API coverage |
+| Concern | Tooling |
+|---|---|
+| Infrastructure as code | [OpenTofu](https://opentofu.org) 1.13, `integrations/github` provider 6.13 |
+| Workstation | WSL + Debian 13 (pinned digest), [Ansible](https://docs.ansible.com) 2.22, [uv](https://docs.astral.sh/uv/), [Molecule](https://ansible.readthedocs.io/projects/molecule/) |
+| Kubernetes & GitOps | [k3d](https://k3d.io) / k3s 1.37, [Flux](https://fluxcd.io) 2.10 (OCI artifacts), Helm 4 |
+| Policy as code | [OPA](https://www.openpolicyagent.org) (Rego v1), [Kyverno](https://kyverno.io) 1.20 (CEL), [kubeconform](https://github.com/yannh/kubeconform) |
+| Supply chain & security | [zizmor](https://docs.zizmor.sh), actionlint, Trivy, Checkov, dependency-review, OpenSSF Scorecard, signed commits |
+| Automation | GitHub Actions, [Renovate](https://docs.renovatebot.com), [just](https://just.systems) |
+| Docs | Mermaid, markdownlint, typos, lychee — every diagram is rendered in CI |
 
----
-
-## Repository structure
-
-```
-.
-├── .devcontainer/                  # VS Code dev container (ready to use)
-├── .github/
-│   ├── CODEOWNERS
-│   ├── SECURITY.md
-│   ├── pull_request_template.md
-│   ├── ISSUE_TEMPLATE/
-│   │   ├── bug_report.yml
-│   │   └── feature.yml
-│   ├── copilot-instructions.md     # GitHub Copilot context
-│   └── workflows/
-│       ├── _tofu-plan.yml          # Reusable: fmt-check → init → validate → plan → PR comment
-│       ├── _tofu-apply.yml         # Reusable: init → apply -auto-approve
-│       ├── tofu-github-plan.yml    # Caller: github stack — plan on PR
-│       ├── tofu-github-apply.yml   # Caller: github stack — apply on merge
-│       ├── tofu-doppler-plan.yml   # Caller: doppler stack — plan on PR
-│       ├── tofu-doppler-apply.yml  # Caller: doppler stack — apply on merge
-│       ├── tofu-test.yml           # tofu test (mock_provider) on module changes
-│       ├── integration-test.yml    # Terratest weekly (real GitHub API)
-│       ├── security-scan.yml       # Trivy + Checkov → GitHub Security tab
-│       ├── scorecard.yml           # OSSF Scorecard weekly
-│       ├── zizmor.yml              # zizmor + actionlint: audit of the workflows themselves
-│       ├── dependency-review.yml   # Block PRs adding vulnerable dependencies
-│       ├── docs.yml                # terraform-docs up to date (check only, no bot commit)
-│       ├── stale.yml               # Close stale issues/PRs
-│       └── release.yml             # Manual semver bump + GitHub release
-│
-├── modules/
-│   └── github/
-│       └── repository/             # Module: repo + branch ruleset + environments + deploy keys
-│           ├── main.tf
-│           ├── variables.tf
-│           ├── outputs.tf
-│           ├── README.md           # Auto-generated by terraform-docs
-│           ├── templates/          # Files injected into managed repos
-│           └── tests/
-│               └── defaults.tftest.hcl   # 11 mock_provider unit tests
-│
-├── scripts/
-│   └── new-stack.sh                # Generator: scaffold a new provider stack + 2 GHA workflows
-│
-├── tests/
-│   ├── go.mod
-│   └── github_repository_test.go  # Terratest integration tests (real API)
-│
-└── terraform/
-    ├── github/                     # Stack: repos, labels, keys, files, Actions vars
-    └── doppler/                    # Stack: Doppler projects, configs, service tokens
-```
-
----
-
-## CI/CD pipeline
-
-```
-PR open / update
-  ├── tofu-github-plan      → fmt-check + init + validate + plan → comment on PR
-  ├── tofu-test             → mock_provider unit tests (modules/**/tests/)
-  ├── zizmor + actionlint   → security + syntax audit of the workflows
-  ├── dependency-review     → fail on newly added vulnerable dependencies
-  └── security-scan         → Trivy + Checkov → GitHub Security tab
-
-Merge to main
-  ├── tofu-github-apply     → tofu apply -auto-approve
-  └── tofu-doppler-apply    → tofu apply -auto-approve
-
-Weekly (scheduled)
-  ├── scorecard             → OSSF Scorecard → Security tab
-  ├── integration-test      → Terratest real-API tests (Sunday 02:00 UTC)
-  └── stale                 → Mark/close inactive issues + PRs (Monday 08:00 UTC)
-
-Renovate (Monday, before 9am Europe/Paris)
-                        → grouped update PRs; patch/minor/digest auto-merged once CI is green, majors wait for review
-
-Manual (workflow_dispatch)
-  └── release             → semver bump → create GitHub release
-```
-
----
-
-## Local setup
-
-### Prerequisites
-
-| Tool | Install | Purpose |
-|---|---|---|
-| [mise](https://mise.jdx.dev) | `curl https://mise.run \| sh` | Go + Python version manager |
-| [tenv](https://github.com/tofuutils/tenv) | `brew install tofuutils/tap/tenv` | OpenTofu version manager |
-| [just](https://github.com/casey/just) | `brew install just` | Task runner (see `justfile`) |
-| [pre-commit](https://pre-commit.com) | `pip install pre-commit` | Git hooks (fmt, validate, scan) |
-| [Trivy](https://trivy.dev) | `brew install trivy` | IaC misconfiguration scanner |
-| [Checkov](https://checkov.io) | `pip install checkov` | Policy-as-code scanner |
-| [tflint](https://github.com/terraform-linters/tflint) | `brew install tflint` | HCL linter |
-| [terraform-docs](https://terraform-docs.io) | `brew install terraform-docs` | Module documentation |
-
-### One-shot setup
-
-On Windows, one command builds a dedicated WSL distribution (`iac`, Debian trixie) with every tool,
-checksum-verified, through the same Ansible role that CI tests with Molecule:
+## Quick start
 
 ```powershell
-pwsh scripts/wsl/new-distro.ps1 -WithCluster   # distro + tools + k3d cluster + Flux
+# Windows: build the 'iac' WSL distribution with every tool, a k3d cluster and Flux
+pwsh scripts/wsl/new-distro.ps1 -WithCluster
 ```
 
 ```bash
-just setup            # pre-commit hooks (incl. commit-msg), Go deps
+# inside the distribution, at the repository root
+just            # list every command, one line of explanation each
+just check      # every CI gate, locally
+just up         # (re)create the cluster and reconcile kubernetes/ through Flux
 ```
 
-### Common tasks
+Full walkthrough: [Getting started](docs/tutorials/getting-started.md).
 
-```bash
-just check            # Every CI gate, locally: fmt, validate, tflint, tofu test, OPA,
-                      # kubeconform + Kyverno, ansible-lint, actionlint + zizmor, Trivy + Checkov
-just check-all        # check + k3d/Flux end-to-end (just up)
-just molecule         # workstation role in a Debian container
-just commits          # commit policy on the branch (no co-author trailer, Signed-off-by)
-just up / just down   # local k3d cluster reconciled by Flux / delete it
+## Documentation
 
-just plan github      # Plan the github stack
-just plan doppler     # Plan the doppler stack
-just apply github     # Apply (prompts for confirmation)
+The docs follow [Diátaxis](https://diataxis.fr): learn, do, look up, understand.
 
-just new-stack stripe # Scaffold a new provider stack
-just docs             # Regenerate terraform-docs for all modules
-just version          # Show all tool versions
-
-just test-integration               # Run Terratest (creates real GitHub resources)
-just test-integration TestMyTest    # Run a specific Terratest function
-```
-
----
-
-## Bootstrap
-
-### 1. Create a GitHub App
-
-**GitHub → Settings → Developer settings → GitHub Apps → New GitHub App**
-
-| Permission | Access | Required for |
-|---|---|---|
-| Administration | Read & Write | Create + configure repositories |
-| Contents | Read & Write | Inject `.github/` files into repos |
-| Issues | Read & Write | Labels + plan comments |
-| Metadata | Read | Repository metadata |
-| Pull requests | Read & Write | Plan comments, auto-merge |
-| Workflows | Read & Write | Repository Actions variables |
-
-After creation:
-1. Note the **App ID**
-2. Generate a **private key** → download `.pem` file
-3. Install the App on your GitHub account → note the **Installation ID**
-
-### 2. Create HCP Terraform organization + workspaces
-
-1. Sign in at [app.terraform.io](https://app.terraform.io)
-2. Create an **organization** and replace `"YOUR_TFC_ORG"` in both `terraform/*/terraform.tf` files
-3. Create two workspaces (execution mode: **Remote**):
-
-**Workspace `github`**
-
-| Variable | Type | Sensitive | Value |
-|---|---|---|---|
-| `github_owner` | Terraform | No | Your GitHub username |
-| `github_app_id` | Terraform | Yes | App ID from step 1 |
-| `github_app_installation_id` | Terraform | Yes | Installation ID from step 1 |
-| `github_app_pem_file` | Terraform | Yes | Full contents of `.pem` file |
-
-**Workspace `doppler`**
-
-| Variable | Type | Sensitive | Value |
-|---|---|---|---|
-| `doppler_token` | Terraform | Yes | Doppler service token (account scope) |
-
-4. Create a **Team API token** → add as GitHub Actions secret `TF_API_TOKEN`
-5. Add the following **GitHub Actions repository variable** (Settings → Variables → Actions):
-
-| Variable | Value | Used by |
-|---|---|---|
-| `TF_DOPPLER_WORKSPACE_ID` | HCP Terraform workspace ID for the `doppler` workspace (e.g. `ws-xxxx`) | `tofu-github-apply.yml` pre-step that enables global remote state |
-
-### 3. First apply
-
-```bash
-just plan github      # Review the import of existing repos
-just apply github     # Import + configure all repos
-
-just plan doppler     # Preview Doppler project creation
-just apply doppler    # Create Doppler projects + service tokens
-```
-
-After a successful apply, the import blocks in `terraform/github/imports.tf` can be removed.
-
----
-
-## Bumping the module version
-
-`terraform/github/repos.tf` references the `modules/github/repository` module via a pinned git tag:
-
-```hcl
-source = "git::https://github.com/GregoireF/iac.git//modules/github/repository?ref=v1.0.0&depth=1"
-```
-
-After any change to `modules/github/repository/`:
-
-1. Merge the module change to `main`
-2. Run **Actions → release → Run workflow** — choose `patch`, `minor`, or `major`
-3. The workflow creates a new tag (e.g. `v1.1.0`) and a GitHub Release
-4. Open a PR to update the `ref=` in `terraform/github/repos.tf` to the new tag
-
----
-
-## Adding a new GitHub repo
-
-Edit `terraform/github/locals.tf` and add an entry to `local.repositories`:
-
-```hcl
-my-new-repo = {
-  description            = "My new repository."
-  topics                 = ["example"]
-  visibility             = "public"
-  has_issues             = true
-  has_wiki               = false
-  has_projects           = false
-  allow_merge_commit     = false
-  allow_squash_merge     = true
-  allow_rebase_merge     = false
-  delete_branch_on_merge = true
-  archived               = false
-  allow_auto_merge       = true
-  inject_standard_files  = true
-
-  branch_protection = {
-    enabled                      = true
-    required_status_checks       = []
-    enforce_conventional_commits = true
-  }
-}
-```
-
-Open a PR → plan comment posted automatically → merge → repo created.
-
----
-
-## Adding a new provider stack
-
-```bash
-just new-stack cloudflare
-```
-
-This creates:
-- `terraform/cloudflare/` with `terraform.tf`, `providers.tf`, `variables.tf`, `locals.tf`, `outputs.tf`
-- `.github/workflows/tofu-cloudflare-plan.yml`
-- `.github/workflows/tofu-cloudflare-apply.yml`
-
-Then:
-1. Edit `terraform/cloudflare/terraform.tf` — add `required_providers` + set TFC org name
-2. Edit `terraform/cloudflare/providers.tf` — configure provider
-3. Create HCP Terraform workspace `cloudflare` + set variables
-4. Open a PR → automated plan → merge → apply
-
----
-
-## Testing
-
-### Unit tests (mock_provider — zero API calls)
-
-```bash
-just test
-# runs tofu init -backend=false && tofu test for every module with a tests/ directory
-```
-
-### Integration tests (real GitHub API — creates + destroys test repos)
-
-```bash
-export GITHUB_TOKEN=<pat-with-repo-scope>
-export GITHUB_OWNER=<your-github-username>
-just test-integration
-```
-
-These run on a weekly schedule in CI (Sunday 02:00 UTC). They create temporary repos with a random suffix and destroy them with `defer terraform.Destroy()`.
-
----
-
-## Security model
-
-| Control | Detail |
+| | |
 |---|---|
-| No long-lived credentials | GitHub App generates ephemeral tokens per run |
-| Secrets never in code | GitHub App PEM + all secrets live in HCP Terraform workspace variables |
-| CI gets minimum access | Workflows receive `GITHUB_TOKEN` only; `TF_API_TOKEN` scoped to HCP Terraform |
-| Doppler | Non-sensitive workspace config via service tokens; secrets stay encrypted in Doppler |
-| Pre-commit gates | `detect-private-key`, `tofu fmt`, Trivy, Checkov run before every push |
-| PR gates | `tofu validate`, `tofu test`, security scan on every PR |
-| OSSF Scorecard | Weekly scoring pushed to GitHub Security tab |
-| Branch protection | Conventional commits enforced via ruleset; no force-push to `main` |
-| Renovate | Patch/minor/digest auto-merged after green CI; majors wait for review; actions pinned by digest |
-| Workflow audit | zizmor + actionlint on every PR |
+| **Tutorial** | [Getting started](docs/tutorials/getting-started.md) — from a Windows PC to a green `just check` and a running cluster |
+| **How-to guides** | [Add a repository](docs/how-to/add-a-repository.md) · [Release the module](docs/how-to/release-the-module.md) · [Change Kubernetes manifests](docs/how-to/change-kubernetes-manifests.md) · [Handle dependency updates](docs/how-to/update-dependencies.md) · [Add a provider stack](docs/how-to/add-a-provider-stack.md) · [Troubleshooting](docs/how-to/troubleshooting.md) |
+| **Reference** | [Commands](docs/reference/commands.md) · [Workflows](docs/reference/workflows.md) · [Toolchain](docs/reference/toolchain.md) · [Policies](docs/reference/policies.md) · [Repository layout](docs/reference/layout.md) · [Module `github/repository`](modules/github/repository/README.md) |
+| **Explanation** | [Architecture](docs/explanation/architecture.md) · [Delivery pipeline](docs/explanation/pipeline.md) · [GitOps loop](docs/explanation/gitops.md) · [Security model](docs/explanation/security-model.md) · [Roadmap & decisions](docs/ROADMAP.md) · [ADRs](docs/adr/) |
 
----
+## Principles
 
-## Why these tools?
+1. **Same steps everywhere** — a check that only exists in CI is a bug.
+2. **Pinned and verified** — binaries checked against vendor checksums, images and actions pinned by digest, Renovate keeps them current.
+3. **One signed human author** — every commit SSH-signed and signed off; co-author and generated-by trailers are rejected.
+4. **Small batches, fast feedback** — trunk-based flow and DORA metrics, after *The DevOps Handbook* ([ADR 0002](docs/adr/0002-solo-flow.md)).
 
-| Decision | Rationale |
-|---|---|
-| OpenTofu over Terraform | MPL-2 licence (BSL-free), `mock_provider` in tests, community momentum |
-| HCP Terraform over self-hosted state | Remote execution, encrypted state, free tier sufficient |
-| GitHub App over PAT | Ephemeral tokens, scoped permissions, no expiry surprises |
-| Doppler over SOPS/Vault | Free tier, native GitHub Actions sync, zero infra to manage |
-| `justfile` over Makefile | POSIX-safe, better syntax, self-documenting (`just --list`) |
-| `mise` over `asdf`/`pyenv` | Unified Go + Python version management, faster, `.mise.toml` is clean |
-| Renovate over Dependabot | Grouping, auto-merge rules, custom managers (OpenTofu version, devcontainer tools, tflint plugins) — same choice as `utils` |
+## Contributing & security
 
----
-
-## Security
-
-Security vulnerabilities should be reported according to the [security policy](.github/SECURITY.md).
-
-Supply-chain security is continuously monitored via [OSSF Scorecard](https://securityscorecards.dev/viewer/?uri=github.com/GregoireF/iac).
-Results are published to the [GitHub Security tab](https://github.com/GregoireF/iac/security/code-scanning) after every push to `main`.
-
----
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the [security policy](.github/SECURITY.md).
 
 ## License
 
 [MIT](LICENSE) — Copyright © 2026 GregoireF
-
-<!-- BEGIN_TF_DOCS -->
-## Requirements
-
-No requirements.
-
-## Providers
-
-No providers.
-
-## Modules
-
-No modules.
-
-## Resources
-
-No resources.
-
-## Inputs
-
-No inputs.
-
-## Outputs
-
-No outputs.
-<!-- END_TF_DOCS -->
