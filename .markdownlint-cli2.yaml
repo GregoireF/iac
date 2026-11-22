@@ -1,0 +1,13 @@
+# markdownlint-cli2 (https://github.com/DavidAnson/markdownlint-cli2), run by scripts/check-docs.sh
+config:
+  default: true
+  # Tables, badges and long links read better unwrapped
+  MD013: false
+  # terraform-docs output uses <a name=...> anchors
+  MD033:
+    allowed_elements: [a, br, details, summary, img, p, picture, source]
+  # Table pipe spacing: both `|---|` and terraform-docs' `| ---- |` are fine
+  MD060: false
+  # Same heading text under different parents (e.g. "Usage" in several sections)
+  MD024:
+    siblings_only: true

@@ -1,0 +1,13 @@
+# lychee (https://lychee.cli.rs), run by scripts/check-docs.sh
+cache = true
+max_cache_age = "1d"
+max_retries = 3
+accept = ["200..=299", "429"]
+exclude = [
+  # local-only endpoints
+  '^https?://(localhost|127\.0\.0\.1)',
+  'k3d-iac-registry',
+  # pages that need a session or only exist after an action
+  '^https://github\.com/GregoireF/iac/(security|settings|pull/new)',
+  '^https://app\.terraform\.io',
+]
