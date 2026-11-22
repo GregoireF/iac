@@ -12,6 +12,9 @@ output:
     <!-- END_TF_DOCS -->
 
 settings:
+  # Provider versions come from the module constraints, not from a local .terraform lock file,
+  # so the output is the same on every machine and in CI.
+  lockfile: false
   anchor: true
   color: true
   default: true

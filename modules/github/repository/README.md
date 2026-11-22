@@ -54,7 +54,7 @@ tofu init -backend=false && tofu test
 
 | Name | Version |
 | ---- | ------- |
-| <a name="provider_github"></a> [github](#provider_github) | 6.13.0 |
+| <a name="provider_github"></a> [github](#provider_github) | >= 6.13 |
 
 ## Modules
 
