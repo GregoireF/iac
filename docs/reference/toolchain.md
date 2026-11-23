@@ -13,7 +13,6 @@ flowchart LR
     dist["scripts/wsl/new-distro.ps1"]
     docs["scripts/check-docs.sh"]
     tf["terraform/*/terraform.tf + .terraform.lock.hcl"]
-    go["tests/go.mod"]
   end
   renovate(["Renovate"]) --> sources
   ws --> local["WSL distro 'iac'"]

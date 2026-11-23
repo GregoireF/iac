@@ -25,7 +25,7 @@ flowchart TB
   end
   subgraph loop["4 · Continuous"]
     renov["Renovate<br/>weekly grouped PR"]
-    sched["Scorecard · scans · Terratest<br/>link check"]
+    sched["Scorecard · scans<br/>link check"]
   end
   check -->|"signed push"| pr
   pr -->|"green + reviewed plan"| main

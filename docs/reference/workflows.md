@@ -21,7 +21,7 @@ flowchart TB
   subgraph sched["Schedule"]
     direction LR
     s1["scorecard · security-scan"]
-    s2["integration-test · docs-quality · stale"]
+    s2["docs-quality · stale"]
   end
   subgraph manual["Manual"]
     r1["release"]
@@ -37,7 +37,6 @@ flowchart TB
 | `tofu-github-apply.yml`, `tofu-doppler-apply.yml` | push to `main` (stack paths), manual | Call `_tofu-apply.yml`; one apply at a time, never cancelled |
 | `_tofu-plan.yml`, `_tofu-apply.yml` | `workflow_call` | Reusable plan and apply; inputs reach the shell through `env` |
 | `tofu-test.yml` | pull request, push, manual | `tofu test` of the modules (mocked provider) |
-| `integration-test.yml` | weekly, manual | Terratest against the real GitHub API |
 | `policy.yml` | pull request, push (policies, kubernetes) | OPA tests; render overlays, kubeconform, Kyverno |
 | `k8s-e2e.yml` | pull request, push (kubernetes, ansible), manual | k3d cluster + Flux through `ansible/playbooks/cluster.yml`, waits for every Kustomization |
 | `ansible.yml` | pull request, push (ansible), manual | ansible-lint; Molecule with every workstation binary |

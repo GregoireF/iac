@@ -45,7 +45,6 @@ mindmap
 ├── terraform/                OpenTofu stacks (terraform/README.md)
 │   ├── github/               14 repositories, labels, keys, files, Actions variables
 │   └── doppler/              Doppler projects and CI tokens (to be replaced by SOPS + age)
-├── tests/                    Terratest integration tests (Go)
 ├── justfile                  every command (docs/reference/commands.md)
 ├── renovate.json             dependency automation
 └── .opentofu-version         OpenTofu version for every consumer

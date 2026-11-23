@@ -50,7 +50,7 @@ Every tool comes from its official release and is checked against the vendor che
 ```powershell
 wsl -d iac
 cd /mnt/d/DEV/iac   # adjust to where the repository lives
-just setup          # git hooks (pre-commit, commit-msg) and Go modules
+just setup          # git hooks (pre-commit, commit-msg)
 ```
 
 ## 3. Run every gate

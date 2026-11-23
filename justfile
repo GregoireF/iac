@@ -22,7 +22,7 @@ request issue:
 
 # ─── Setup ────────────────────────────────────────────────────────────────────
 
-# First-time setup: git hooks and Go modules (tools come from `just workstation`)
+# First-time setup: git hooks (tools come from `just workstation`)
 setup:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -30,8 +30,6 @@ setup:
     echo "→ pre-commit hooks (including commit-msg stage)"
     pre-commit install --install-hooks
     pre-commit install --hook-type commit-msg
-    echo "→ Go dependencies"
-    cd tests && go mod tidy
     echo ""
     echo "✓ Setup complete. Run 'just check' to validate everything."
 
@@ -80,10 +78,6 @@ test:
       fi
     done
     [ "$found" -eq 1 ] || echo "No test directories found."
-
-# Run Terratest integration tests (creates real GitHub resources — slow)
-test-integration filter="TestGitHub":
-    cd tests && go test -v -run "{{ filter }}" -timeout 15m ./...
 
 # ─── Security ─────────────────────────────────────────────────────────────────
 

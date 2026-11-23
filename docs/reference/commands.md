@@ -40,7 +40,7 @@ flowchart LR
 
 | Recipe | Effect |
 |---|---|
-| `just setup` | Installs git hooks (pre-commit and commit-msg) and Go modules |
+| `just setup` | Installs git hooks (pre-commit and commit-msg) |
 | `just workstation` | Re-runs the workstation playbook: installs what changed, nothing else |
 | `just up` | Creates the k3d cluster and registry if missing, installs Flux, pushes `kubernetes/`, waits for Ready |
 | `just down` | Deletes the cluster and the registry |
@@ -55,5 +55,4 @@ flowchart LR
 | `just apply <stack>` | Same, then apply after a confirmation prompt |
 | `just apply-auto <stack>` | Apply without prompt |
 | `just new-stack <name>` | Scaffold a stack and its two workflows ([guide](../how-to/add-a-provider-stack.md)) |
-| `just test-integration [filter]` | Terratest against the real GitHub API (creates and destroys repositories) |
 | `just commit` | Conventional commit helper (czg if installed, else `git commit`) |
