@@ -1,6 +1,7 @@
 # Every commit of a pull request follows the commit policy (scripts/check-commit-msg.sh):
-# no co-author / generated-by trailer, the author's own DCO "Signed-off-by". Bots (Renovate, GitHub)
-# are exempt from the sign-off but never from the trailer rule.
+# Conventional Commits, no co-author / generated-by trailer, the author's own DCO "Signed-off-by".
+# Bots (Renovate, GitHub) are exempt from the format and sign-off, never from the trailer rule.
+# Its job, "commit policy", is the required status check of this repository's ruleset.
 name: commit-policy
 
 on:

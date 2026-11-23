@@ -13,7 +13,7 @@ flowchart TB
   end
   subgraph pr["2 · Pull request — minutes"]
     direction LR
-    g1["commitlint<br/>commit-policy"]
+    g1["commit-policy"]
     g2["plan comment<br/>tofu test"]
     g3["policy<br/>k8s-e2e<br/>ansible"]
     g4["zizmor<br/>dependency-review<br/>security-scan"]

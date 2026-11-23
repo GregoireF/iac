@@ -43,12 +43,12 @@ locals {
 
       branch_protection = {
         enabled = true
-        # "Commitlint" runs on every PR regardless of changed paths — safe to require.
-        # Path-conditional checks (plan, trivy…) are not listed to avoid blocking PRs
+        # "commit policy" (commit-policy.yml) runs on every PR regardless of changed paths — safe
+        # to require. Path-conditional checks (plan, trivy…) are not listed to avoid blocking PRs
         # where those workflows are not triggered.
-        # commit_message_pattern ruleset rule is unsupported on personal repos;
-        # conventional commits are enforced via the commitlint CI workflow instead.
-        required_status_checks       = ["Commitlint"]
+        # commit_message_pattern ruleset rule is unsupported on personal repos; Conventional
+        # Commits, sign-off and the single-author rule are enforced by scripts/check-commit-msg.sh.
+        required_status_checks       = ["commit policy"]
         enforce_conventional_commits = false
         require_pr_reviews           = true
         dismiss_stale_reviews        = true

@@ -36,4 +36,4 @@ Every entry below happened while building this platform; the symptom is quoted a
 | `scripts/…sh: Permission denied` in a workflow | File committed without the executable bit (common from Windows) | `git update-index --chmod=+x scripts/<file>.sh` and commit |
 | Renovate local run: `RegExp.escape is not a function` | Renovate 44 needs Node.js 24+ | `npx -y -p node@24 -p renovate@<version> -- renovate …` |
 | zizmor green locally, red in CI | CI runs the online audits (a GitHub token is present) | `GH_TOKEN=<token> just gha` reproduces CI (on Windows, `gh auth token` prints one) |
-| Commitlint: `subject must not be sentence-case` | Subject starts with a capital letter | Lower-case the first word: `feat(policy): add …` |
+| commit policy: `subject must not start with a capital letter` | Subject starts with a capital letter | Lower-case the first word: `feat(policy): add …` |

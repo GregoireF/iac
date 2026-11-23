@@ -7,7 +7,7 @@ read-only unless a job needs more, and the whole directory is audited by zizmor 
 flowchart TB
   subgraph pr["Pull request"]
     direction LR
-    p1["commitlint · commit-policy"]
+    p1["commit-policy"]
     p2["tofu-*-plan · tofu-test"]
     p3["policy · k8s-e2e · ansible"]
     p4["zizmor · dependency-review · security-scan"]
@@ -31,8 +31,7 @@ flowchart TB
 
 | Workflow | Triggers | What it does |
 |---|---|---|
-| `commitlint.yml` | pull request | Conventional Commits on every commit of the PR |
-| `commit-policy.yml` | pull request | `scripts/check-commit-msg.sh`: no co-author or generated-by trailer, the author's own sign-off |
+| `commit-policy.yml` | pull request | `scripts/check-commit-msg.sh`: Conventional Commits, no co-author or generated-by trailer, the author's own sign-off; required check of the `main` ruleset |
 | `tofu-github-plan.yml`, `tofu-doppler-plan.yml` | pull request (stack paths) | Call `_tofu-plan.yml`: fmt, init, validate, plan, plan posted as a PR comment |
 | `tofu-github-apply.yml`, `tofu-doppler-apply.yml` | push to `main` (stack paths), manual | Call `_tofu-apply.yml`; one apply at a time, never cancelled |
 | `_tofu-plan.yml`, `_tofu-apply.yml` | `workflow_call` | Reusable plan and apply; inputs reach the shell through `env` |
