@@ -24,7 +24,7 @@ repos:
         stages: [commit-msg]
 
   # OpenTofu — format and validate
-  # Requires `tofu` in PATH (installed by tenv via .opentofu-version)
+  # Requires `tofu` in PATH (installed by ansible/roles/workstation, version in .opentofu-version)
   - repo: local
     hooks:
       - id: tofu-fmt
