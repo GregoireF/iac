@@ -38,7 +38,6 @@ vendor checksum file, or against a pinned `sha256` when the vendor publishes non
 | conftest, opa, kyverno, kubeconform | Policy as code | vendor checksums |
 | actionlint, lychee | Workflow lint, link checker | vendor checksums |
 | gh, fzf | GitHub CLI (`just request`), command menu | vendor checksums |
-| Go | Terratest | vendor `.sha256` |
 | zizmor, checkov, pre-commit, ansible-lint, molecule, typos | Python CLIs | exact `==` pins, isolated uv tools |
 | ansible-core | Ansible (with the Docker SDK for Molecule) | exact pin, uv tool |
 

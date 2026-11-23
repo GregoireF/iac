@@ -33,12 +33,11 @@
       register: workstation_verify_run
       changed_when: false
       failed_when: item.expect not in workstation_verify_run.stdout
-      when: item.name in workstation_verify_names + ['go']
+      when: item.name in workstation_verify_names
       loop:
         - { name: tofu, cmd: "tofu version", expect: "OpenTofu v1." }
         - { name: kubectl, cmd: "kubectl version --client", expect: "Client Version: v1." }
         - { name: age, cmd: "age --version", expect: "v1." }
         - { name: age, cmd: "age-keygen --version", expect: "v1." }
-        - { name: go, cmd: "/usr/local/go/bin/go version", expect: "go1." }
       loop_control:
         label: "{{ item.cmd }}"

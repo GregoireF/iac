@@ -216,7 +216,6 @@ clean:
 # Show OpenTofu version in use
 version:
     tofu version
-    go version
     python3 --version
     terraform-docs --version
     tflint --version

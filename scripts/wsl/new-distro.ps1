@@ -112,6 +112,6 @@ $vars = Join-Path $env:TEMP 'iac-distro-vars.json'
 $wslVars = (wsl -d $Name -e wslpath -a ($vars -replace '\\', '/')).Trim()
 foreach ($pb in $playbooks) {
   Write-Host "==> ansible-playbook $pb"
-  Invoke-InDistro ("set -eu`nexport PATH=`$HOME/.local/bin:/usr/local/go/bin:`$PATH`ncd '$wslRepo/ansible'`nANSIBLE_CONFIG=ansible.cfg ansible-playbook $pb -e @'$wslVars'")
+  Invoke-InDistro ("set -eu`nexport PATH=`$HOME/.local/bin:`$PATH`ncd '$wslRepo/ansible'`nANSIBLE_CONFIG=ansible.cfg ansible-playbook $pb -e @'$wslVars'")
 }
 Remove-Item $vars -ErrorAction SilentlyContinue

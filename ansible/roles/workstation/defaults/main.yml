@@ -156,9 +156,6 @@ workstation_binaries:
     checksum: "sha256:https://github.com/rhysd/actionlint/releases/download/v@V@/actionlint_@V@_checksums.txt"
     archive: true
 
-# Go toolchain (Terratest), verified against the hash-only .sha256 file published next to each archive
-# renovate: datasource=golang-version depName=go
-workstation_go_version: "1.27.4"
 
 # Python CLIs installed as isolated uv tools (uv is installed by scripts/wsl/new-distro.ps1)
 workstation_uv_tools:

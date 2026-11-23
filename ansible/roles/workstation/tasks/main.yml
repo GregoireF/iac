@@ -20,8 +20,13 @@
     loop_var: tool
     label: "{{ tool.name }} {{ tool.version }}"
 
-- name: Go toolchain
-  ansible.builtin.import_tasks: go.yml
+# The Go toolchain only served Terratest, which is gone: remove it from existing machines too
+- name: Go toolchain removed
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: [/usr/local/go, /etc/profile.d/go.sh]
 
 - name: Git identity and commit signing
   ansible.builtin.import_tasks: git.yml
