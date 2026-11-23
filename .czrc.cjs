@@ -43,7 +43,6 @@ module.exports = {
     { value: 'docs',         name: 'docs:          Documentation et README' },
     { value: 'deps',         name: 'deps:          Mises à jour de dépendances' },
     { value: 'release',      name: 'release:       Versioning / release' },
-    { value: 'devcontainer', name: 'devcontainer:  Dev container' },
     { value: 'tests',        name: 'tests:         Tests unitaires et intégration' },
     { value: 'security',     name: 'security:      Scans, hooks, durcissement' },
   ],

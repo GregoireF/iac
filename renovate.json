@@ -14,23 +14,7 @@
   "pre-commit": { "enabled": true },
   "customManagers": [
     {
-      "description": "Devcontainer tool versions annotated with '# renovate:' comments",
-      "customType": "regex",
-      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
-      "matchStrings": [
-        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+ARG \\w+=(?<currentValue>\\S+)"
-      ],
-      "extractVersionTemplate": "^v?(?<version>.*)$"
-    },
-    {
-      "description": "pip pins installed in the devcontainer",
-      "customType": "regex",
-      "managerFilePatterns": ["/(^|/)Dockerfile$/"],
-      "matchStrings": ["\"(?<depName>pre-commit|checkov)==(?<currentValue>[^\"]+)\""],
-      "datasourceTemplate": "pypi"
-    },
-    {
-      "description": "OpenTofu version used by tenv and CI",
+      "description": "OpenTofu version used by the workstation and CI",
       "customType": "regex",
       "managerFilePatterns": ["/^\\.opentofu-version$/"],
       "matchStrings": ["^(?<currentValue>\\S+)"],

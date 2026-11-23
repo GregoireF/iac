@@ -1,7 +1,7 @@
 # Handle dependency updates
 
 Renovate owns every version in this repository: OpenTofu and providers, Go modules, GitHub Actions
-(pinned by digest), pre-commit hooks, devcontainer tools, the Ansible tool list, container images,
+(pinned by digest), pre-commit hooks, the Ansible tool list, container images,
 the Flux chart tags and the docs tooling.
 
 ```mermaid

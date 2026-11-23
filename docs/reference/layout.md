@@ -25,7 +25,6 @@ mindmap
 
 ```text
 .
-├── .devcontainer/            VS Code dev container
 ├── .github/
 │   ├── workflows/            CI/CD (reference: docs/reference/workflows.md)
 │   ├── ISSUE_TEMPLATE/       issue forms
