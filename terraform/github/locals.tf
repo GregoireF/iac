@@ -547,7 +547,7 @@ locals {
       }
 
       # release.yml runs from v* tags (any ref); the nightly channels.yml runs on main and
-      # holds the signing key of the channel list (CHANNELS_SIGNING_KEY, telly.tf).
+      # reads the signing key of the channel list from Doppler (DOPPLER_TOKEN, telly.tf).
       environments = {
         release = {
           deployment_branch_policy = "all"
