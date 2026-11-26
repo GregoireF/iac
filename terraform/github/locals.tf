@@ -510,6 +510,53 @@ locals {
 
       inject_standard_files = false
     }
+
+    telly = {
+      description            = "Live French TV and radio for Windows, simple enough for an elderly relative: big tiles, a remote-like keyboard, silent updates."
+      topics                 = ["windows", "wpf", "dotnet", "tv", "radio", "iptv", "velopack", "accessibility", "libvlc"]
+      visibility             = "public"
+      has_issues             = true
+      has_wiki               = false
+      has_projects           = false
+      allow_merge_commit     = false
+      allow_squash_merge     = true
+      allow_rebase_merge     = false
+      delete_branch_on_merge = true
+      archived               = false
+      allow_auto_merge       = true
+      # Telly manages its own README, LICENSE and .github/ files (workflows, Dependabot).
+      inject_standard_files = false
+
+      branch_protection = {
+        enabled = true
+        # Job names of Telly's own workflows. `ci passed` aggregates format, build, tests with
+        # the 80 % coverage gate and the real install/uninstall test. Code scanning jobs are
+        # skipped until CODE_SCANNING is set, and a skipped job counts as passed. Titles are
+        # checked by ship-it (gitmoji + Conventional Commits), as for kiwa: no commit regex.
+        required_status_checks = [
+          "ci passed",
+          "title",
+          "zizmor",
+          "actionlint",
+          "dependency review",
+        ]
+        strict_status_checks  = false
+        require_pr_reviews    = true
+        admin_bypass          = false
+        dismiss_stale_reviews = true
+      }
+
+      # release.yml runs from v* tags (any ref); the nightly channels.yml runs on main and
+      # holds the signing key of the channel list (CHANNELS_SIGNING_KEY, telly.tf).
+      environments = {
+        release = {
+          deployment_branch_policy = "all"
+        }
+        channels = {
+          deployment_branch_policy = "protected"
+        }
+      }
+    }
   }
 
   # ---------------------------------------------------------------------------
