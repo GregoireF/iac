@@ -12,5 +12,8 @@ locals {
     utils = {
       description = "Secrets for the utils repository."
     }
+    telly = {
+      description = "Secrets for the telly repository (the key that signs the channel list)."
+    }
   }
 }
