@@ -63,6 +63,9 @@ resource "github_repository_ruleset" "default_branch" {
       for_each = length(var.config.branch_protection.required_status_checks) > 0 ? [1] : []
       content {
         strict_required_status_checks_policy = var.config.branch_protection.strict_status_checks
+        # The checks cannot have run on a branch that does not exist yet: without this, the first push of an
+        # empty repository (creating its default branch) is refused. Every later update still needs them.
+        do_not_enforce_on_create = true
 
         dynamic "required_check" {
           for_each = var.config.branch_protection.required_status_checks
