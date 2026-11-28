@@ -15,8 +15,5 @@ locals {
     telly = {
       description = "Secrets for the telly repository (the key that signs the channel list)."
     }
-    addlicense = {
-      description = "Secrets for the addlicense repository (the Codecov upload token)."
-    }
   }
 }

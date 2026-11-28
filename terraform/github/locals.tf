@@ -644,7 +644,7 @@ locals {
   # Repos with a Doppler project + ci config — get a DOPPLER_TOKEN Actions secret.
   # Must be a subset of local.repositories keys.
   # ---------------------------------------------------------------------------
-  doppler_repos = toset(["iac", "utils", "addlicense"])
+  doppler_repos = toset(["iac", "utils"])
 
   # Repositories that keep their own labels instead of the standard ones.
   # ship-it brings its own taxonomy (kind/*, size/*, triage/*), applied by
