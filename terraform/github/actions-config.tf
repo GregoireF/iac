@@ -25,3 +25,13 @@ resource "github_actions_variable" "kiwa_scorecard_publish" {
 
   depends_on = [module.repository]
 }
+
+# kiwa is public, so CodeQL, zizmor's SARIF upload, dependency review and
+# Scorecard run (their jobs are skipped while this is unset), as for telly.
+resource "github_actions_variable" "kiwa_code_scanning" {
+  repository    = module.repository["kiwa"].name
+  variable_name = "CODE_SCANNING"
+  value         = "true"
+
+  depends_on = [module.repository]
+}
