@@ -533,10 +533,13 @@ locals {
         # the 80 % coverage gate and the real install/uninstall test. Code scanning jobs are
         # skipped until CODE_SCANNING is set, and a skipped job counts as passed. Titles are
         # checked by ship-it (gitmoji + Conventional Commits), as for kiwa: no commit regex.
-        # Lifted for the empty repository's first push only (no check can have run on a branch
-        # that does not exist yet); restored right after it.
-        required_status_checks = []
-
+        required_status_checks = [
+          "ci passed",
+          "title",
+          "zizmor",
+          "actionlint",
+          "dependency review",
+        ]
         strict_status_checks  = false
         require_pr_reviews    = true
         admin_bypass          = false
